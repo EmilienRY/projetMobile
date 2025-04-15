@@ -32,7 +32,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.material.v1100)
     implementation(libs.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)
