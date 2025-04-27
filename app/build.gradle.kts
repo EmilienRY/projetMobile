@@ -14,10 +14,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         externalNativeBuild {
             cmake {
-                cppFlags += ""
+                cppFlags += "-std=c++17"  // Utiliser l'opérateur += pour ajouter des flags
             }
+        }
+
+        ndk {
+            abiFilters.add("armeabi-v7a")
+            abiFilters.add("arm64-v8a")
+            abiFilters.add("x86")
+            abiFilters.add("x86_64")
         }
     }
 
@@ -30,14 +38,15 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
         }
     }
 }

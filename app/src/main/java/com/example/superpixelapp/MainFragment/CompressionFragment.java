@@ -23,7 +23,15 @@ import com.example.superpixelapp.R;
 public class CompressionFragment extends Fragment {
     private ImageView imageView;
     private Button boutonChoisir;
+    private Button boutonValider;
     private ActivityResultLauncher<Intent> launcherGalerie;
+
+    private Bitmap bitmapSelectionne;
+
+
+    static {
+       System.loadLibrary("superpixelapp");
+    }
 
     @Nullable
     @Override
@@ -31,7 +39,10 @@ public class CompressionFragment extends Fragment {
         View vue = inflater.inflate(R.layout.fragment_compression, container, false);
 
         boutonChoisir = vue.findViewById(R.id.boutonChoisir);
+        boutonValider = vue.findViewById(R.id.boutonValider);
         imageView = vue.findViewById(R.id.imageView);
+
+        boutonValider.setEnabled(false);
 
         // Préparer le launcher pour ouvrir la galerie
         launcherGalerie = registerForActivityResult(
@@ -52,9 +63,11 @@ public class CompressionFragment extends Fragment {
                                 int newHeight = bitmap.getHeight() / 2;
 
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                                bitmapSelectionne=bitmapReduit;
                                 imageView.setImageBitmap(bitmapReduit);
                             }
                             else{
+                                bitmapSelectionne=bitmap;
                                 imageView.setImageBitmap(bitmap);
                             }
                             // Ici tu peux appeler ton traitement d'image C++ si besoin
@@ -68,11 +81,30 @@ public class CompressionFragment extends Fragment {
 
         boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
 
+        boutonValider.setOnClickListener(view -> {
+            if (bitmapSelectionne != null) {
+                lancerTraitement(bitmapSelectionne);
+            }
+        });
+
         return vue;
     }
 
     private void ouvrirGalerie() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         launcherGalerie.launch(intent);
+    }
+
+    private void lancerTraitement(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int[] pixels = new int[width * height];
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+        // Appel de la fonction C++ native
+        traiterImageNative(pixels, width, height);
+
+        // Tu pourrais ensuite, par exemple, mettre à jour l'affichage de l'image traitée
+        // imageView.setImageBitmap(Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888));
     }
 }
