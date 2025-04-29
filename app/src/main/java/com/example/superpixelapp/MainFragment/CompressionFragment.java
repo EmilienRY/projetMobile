@@ -30,8 +30,11 @@ public class CompressionFragment extends Fragment {
 
 
     static {
-       System.loadLibrary("superpixelapp");
+        System.loadLibrary("superpixel");
     }
+
+    public native void traiterImageNative(int[] pixels, int width, int height);
+
 
     @Nullable
     @Override
@@ -82,6 +85,7 @@ public class CompressionFragment extends Fragment {
         boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
 
         boutonValider.setOnClickListener(view -> {
+            System.out.println("ok");
             if (bitmapSelectionne != null) {
                 lancerTraitement(bitmapSelectionne);
             }

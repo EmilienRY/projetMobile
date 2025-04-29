@@ -15,12 +15,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        externalNativeBuild {
-            cmake {
-                cppFlags += "-std=c++17"  // Utiliser l'opérateur += pour ajouter des flags
-            }
-        }
-
         ndk {
             abiFilters.add("armeabi-v7a")
             abiFilters.add("arm64-v8a")
@@ -50,6 +44,9 @@ android {
         }
     }
 }
+
+android.sourceSets["main"].jniLibs.srcDirs("src/main/jniLibs")
+
 
 dependencies {
     implementation(libs.material.v1100)

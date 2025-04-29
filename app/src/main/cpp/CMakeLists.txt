@@ -5,9 +5,9 @@ project("superpixelapp")
 
 # Ajoute la bibliothèque partagée 'superpixelapp' avec le fichier source C++
 add_library(
-        superpixelapp
+        superpixel
         SHARED
-        src/main/cpp/CompressionFragment.cpp
+        superpixelapp.cpp
 )
 
 # Trouve la bibliothèque 'log' et lie-la
@@ -18,7 +18,7 @@ find_library(
 
 # Lier la bibliothèque 'log' avec notre bibliothèque native
 target_link_libraries(
-        superpixelapp
+        superpixel
         ${log-lib}
 )
 
