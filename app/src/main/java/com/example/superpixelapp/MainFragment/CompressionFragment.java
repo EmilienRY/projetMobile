@@ -60,6 +60,7 @@ public class CompressionFragment extends Fragment {
                                 int newHeight = bitmap.getHeight() / 3;
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
                                 imageView.setImageBitmap(bitmapReduit);
+                                boutonValider.setEnabled(true);
                             }
                             else if(bitmap.getWidth()>1000 || bitmap.getHeight()>1000){
                                 int newWidth = bitmap.getWidth() / 2;
@@ -68,10 +69,13 @@ public class CompressionFragment extends Fragment {
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
                                 bitmapSelectionne=bitmapReduit;
                                 imageView.setImageBitmap(bitmapReduit);
+                                boutonValider.setEnabled(true);
+
                             }
                             else{
                                 bitmapSelectionne=bitmap;
                                 imageView.setImageBitmap(bitmap);
+                                boutonValider.setEnabled(true);
                             }
                             // Ici tu peux appeler ton traitement d'image C++ si besoin
 
@@ -85,7 +89,6 @@ public class CompressionFragment extends Fragment {
         boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
 
         boutonValider.setOnClickListener(view -> {
-            System.out.println("ok");
             if (bitmapSelectionne != null) {
                 lancerTraitement(bitmapSelectionne);
             }
@@ -109,6 +112,6 @@ public class CompressionFragment extends Fragment {
         traiterImageNative(pixels, width, height);
 
         // Tu pourrais ensuite, par exemple, mettre à jour l'affichage de l'image traitée
-        // imageView.setImageBitmap(Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888));
+        imageView.setImageBitmap(Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888));
     }
 }

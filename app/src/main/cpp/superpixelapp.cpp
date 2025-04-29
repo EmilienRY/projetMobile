@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <android/log.h>
 #include <vector>
 
 extern "C"
@@ -8,6 +9,7 @@ Java_com_example_superpixelapp_MainFragment_CompressionFragment_traiterImageNati
 
     jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
     int taille = width * height;
+    __android_log_print(ANDROID_LOG_DEBUG, "NATIVE_DEBUG", "Appel de traiterImageNative OK");
 
     for (int i = 0; i < taille; i++) {
         jint pixel = tabPixels[i];
