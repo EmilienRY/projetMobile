@@ -6,11 +6,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.superpixelapp.DataBase.BitmapConverter;
 import com.example.superpixelapp.DataBase.DataBase;
 import com.example.superpixelapp.DataBase.SuperPixelImage;
 
@@ -29,10 +27,8 @@ public class ImageSavingUtil {
             @Override
             protected Boolean doInBackground(Void... voids) {
                 try {
-                    // 1. Sauvegarder l'image traitée dans le stockage
                     String processedImagePath = saveBitmapToInternalStorage(context, processedImage, name);
 
-                    // 2. Créer l'entité à sauvegarder
                     SuperPixelImage image = new SuperPixelImage();
                     image.name = name;
                     image.originalImagePath = originalImageUri.toString();
@@ -41,7 +37,6 @@ public class ImageSavingUtil {
                     image.parameters = parameters;
                     image.dateCreated = System.currentTimeMillis();
 
-                    // 3. Insérer dans la base de données
                     DataBase.getInstance(context).superPixelImageDao().insert(image);
                     return true;
                 } catch (Exception e) {
@@ -62,15 +57,12 @@ public class ImageSavingUtil {
     }
 
     private static String saveBitmapToInternalStorage(Context context, Bitmap bitmap, String name) throws IOException {
-        // Créer un nom de fichier unique
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String fileName = "PROCESSED_" + timeStamp + "_" + name + ".jpg";
 
-        // Créer le fichier dans le répertoire Pictures de l'application
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File imageFile = new File(storageDir, fileName);
 
-        // Compresser et sauvegarder le bitmap
         try (FileOutputStream out = new FileOutputStream(imageFile)) {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); // 85% de qualité
         }
