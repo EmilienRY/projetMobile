@@ -100,9 +100,9 @@ public class CreationFragment extends Fragment {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                        Uri imageUri = result.getData().getData();
+                        photoUri = result.getData().getData();
                         try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
                             bitmapSelectionne=bitmap;
                             if(bitmap.getWidth()>2000 || bitmap.getHeight()>2000){
                                 int newWidth = bitmap.getWidth() / 3;
