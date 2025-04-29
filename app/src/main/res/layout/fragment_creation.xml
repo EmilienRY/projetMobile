@@ -35,11 +35,25 @@
         android:layout_marginTop="20dp"
         android:background="#CCCCCC"/>
 
-
-    <Button
-        android:id="@+id/boutonValider"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Valider" />
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/boutonValider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Valider" />
+
+        <Button
+            android:id="@+id/boutonSauvegarder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Sauvegarder"
+            android:enabled="false" />
+    </LinearLayout>
 
 </LinearLayout>

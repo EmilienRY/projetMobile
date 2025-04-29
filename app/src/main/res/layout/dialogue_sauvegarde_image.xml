@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nom de l'image"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/editTextNom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Entrez un nom pour cette image"
+        android:inputType="text"
+        android:maxLines="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Algorithme utilisé"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/editTextAlgorithme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nom de l'algorithme"
+        android:inputType="text"
+        android:maxLines="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Paramètres"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/editTextParametres"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Paramètres utilisés"
+        android:inputType="text"
+        android:maxLines="3" />
+
+</LinearLayout>
