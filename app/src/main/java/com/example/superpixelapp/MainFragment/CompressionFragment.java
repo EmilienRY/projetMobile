@@ -55,11 +55,12 @@ public class CompressionFragment extends Fragment {
                         Uri imageUri = result.getData().getData();
                         try {
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+                            bitmapSelectionne=bitmap;
                             if(bitmap.getWidth()>2000 || bitmap.getHeight()>2000){
                                 int newWidth = bitmap.getWidth() / 3;
                                 int newHeight = bitmap.getHeight() / 3;
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-                                bitmapSelectionne=bitmapReduit;
+                                //bitmapSelectionne=bitmapReduit;
                                 imageView.setImageBitmap(bitmapReduit);
                                 boutonValider.setEnabled(true);
                             }
@@ -68,13 +69,13 @@ public class CompressionFragment extends Fragment {
                                 int newHeight = bitmap.getHeight() / 2;
 
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-                                bitmapSelectionne=bitmapReduit;
+                                //bitmapSelectionne=bitmapReduit;
                                 imageView.setImageBitmap(bitmapReduit);
                                 boutonValider.setEnabled(true);
 
                             }
                             else{
-                                bitmapSelectionne=bitmap;
+                                //bitmapSelectionne=bitmap;
                                 imageView.setImageBitmap(bitmap);
                                 boutonValider.setEnabled(true);
                             }

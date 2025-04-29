@@ -32,6 +32,36 @@ Java_com_example_superpixelapp_MainFragment_CompressionFragment_traiterImageNati
     env->ReleaseIntArrayElements(pixels, tabPixels, 0);
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageNative(
+        JNIEnv *env, jobject thiz, jintArray pixels, jint width, jint height) {
+
+jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
+int taille = width * height;
+__android_log_print(ANDROID_LOG_DEBUG, "NATIVE_DEBUG", "Appel de traiterImageNative OK");
+
+for (int i = 0; i < taille; i++) {
+jint pixel = tabPixels[i];
+
+// Décomposer la couleur
+int a = (pixel >> 24) & 0xff;
+int r = (pixel >> 16) & 0xff;
+int g = (pixel >> 8) & 0xff;
+int b = pixel & 0xff;
+
+// Inverser les couleurs
+r = 255 - r;
+g = 255 - g;
+b = 255 - b;
+
+// Recomposer
+tabPixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+env->ReleaseIntArrayElements(pixels, tabPixels, 0);
+}
+
 using namespace std;
 
 bool testConvergence(vector<vector<int>> centroids, vector<vector<int>> newCentroid){
