@@ -39,12 +39,13 @@ import androidx.core.content.ContextCompat;
 
 public class CreationFragment extends Fragment {
     private ImageView imageView;
-    private Button boutonPhoto, boutonValider, boutonSauvegarder;
+    private Button boutonPhoto, boutonValider, boutonSauvegarder, boutonChoisir;
 
     private Bitmap bitmapSelectionne;
     private Bitmap bitmapTraite;
     private Uri photoUri;
     private File photoFichier;
+    private ActivityResultLauncher<Intent> launcherGalerie;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
 
     private ActivityResultLauncher<Intent> launcherCamera;
@@ -61,6 +62,7 @@ public class CreationFragment extends Fragment {
         View vue = inflater.inflate(R.layout.fragment_creation, container, false);
 
         boutonPhoto = vue.findViewById(R.id.boutonPhoto);
+        boutonChoisir = vue.findViewById(R.id.boutonChoisir);
         boutonValider = vue.findViewById(R.id.boutonValider);
         boutonSauvegarder = vue.findViewById(R.id.boutonSauvegarder); // Assurez-vous d'ajouter ce bouton dans votre layout
         imageView = vue.findViewById(R.id.imageView);
@@ -93,6 +95,49 @@ public class CreationFragment extends Fragment {
 
         boutonPhoto.setOnClickListener(view -> verifierEtPrendrePhoto());
 
+        // Préparer le launcher pour ouvrir la galerie
+        launcherGalerie = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        try {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
+                            bitmapSelectionne=bitmap;
+                            if(bitmap.getWidth()>2000 || bitmap.getHeight()>2000){
+                                int newWidth = bitmap.getWidth() / 3;
+                                int newHeight = bitmap.getHeight() / 3;
+                                Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                                //bitmapSelectionne=bitmapReduit;
+                                imageView.setImageBitmap(bitmapReduit);
+                                boutonValider.setEnabled(true);
+                            }
+                            else if((bitmap.getWidth()>1000 || bitmap.getHeight()>1000) && bitmap.getWidth()<2000 && bitmap.getHeight()<2000){
+                                int newWidth = bitmap.getWidth() / 2;
+                                int newHeight = bitmap.getHeight() / 2;
+
+                                Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                                //bitmapSelectionne=bitmapReduit;
+                                imageView.setImageBitmap(bitmapReduit);
+                                boutonValider.setEnabled(true);
+
+                            }
+                            else{
+                                //bitmapSelectionne=bitmap;
+                                imageView.setImageBitmap(bitmap);
+                                boutonValider.setEnabled(true);
+                            }
+                            // Ici tu peux appeler ton traitement d'image C++ si besoin
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+
+        boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
+
         boutonValider.setOnClickListener(view -> {
             if (bitmapSelectionne != null) {
                 bitmapTraite = lancerTraitement(bitmapSelectionne);
@@ -108,6 +153,8 @@ public class CreationFragment extends Fragment {
 
         return vue;
     }
+
+
 
     private void prendrePhoto() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -168,6 +215,11 @@ public class CreationFragment extends Fragment {
                 Toast.makeText(getContext(), "Permission caméra refusée", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void ouvrirGalerie() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        launcherGalerie.launch(intent);
     }
 
     private void afficherDialogueSauvegarde() {
