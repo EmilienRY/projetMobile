@@ -59,10 +59,11 @@ public class CompressionFragment extends Fragment {
                                 int newWidth = bitmap.getWidth() / 3;
                                 int newHeight = bitmap.getHeight() / 3;
                                 Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+                                bitmapSelectionne=bitmapReduit;
                                 imageView.setImageBitmap(bitmapReduit);
                                 boutonValider.setEnabled(true);
                             }
-                            else if(bitmap.getWidth()>1000 || bitmap.getHeight()>1000){
+                            else if((bitmap.getWidth()>1000 || bitmap.getHeight()>1000) && bitmap.getWidth()<2000 && bitmap.getHeight()<2000){
                                 int newWidth = bitmap.getWidth() / 2;
                                 int newHeight = bitmap.getHeight() / 2;
 
