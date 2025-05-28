@@ -1,11 +1,15 @@
 package com.example.superpixelapp.utils;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,12 +19,13 @@ import com.example.superpixelapp.DataBase.SuperPixelImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class ImageSavingUtil {
-    public static void saveProcessedImage(Context context, Uri originalImageUri, Bitmap processedImage,
+    public static void saveProcessedImage(Context context, String originalImageUri, Bitmap processedImage,
                                           String name, String algorithmName, String parameters) {
 
         new AsyncTask<Void, Void, Boolean>() {
@@ -54,6 +59,68 @@ public class ImageSavingUtil {
                 }
             }
         }.execute();
+    }
+
+    public static String getRealPathFromUri(Context context, Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = null;
+        try {
+            cursor = context.getContentResolver().query(uri, projection, null, null, null);
+            if (cursor != null) {
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
+
+    public static void saveToGallery(Context context, Bitmap bitmap, String name) {
+        String filename = name + "_" + System.currentTimeMillis() + ".jpg";
+        OutputStream fos;
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/SuperPixelApp");
+
+                ContentResolver resolver = context.getContentResolver();
+                Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                if (imageUri != null) {
+                    fos = resolver.openOutputStream(imageUri);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    if (fos != null) fos.close();
+                    Toast.makeText(context, "Image enregistrée dans la galerie", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/SuperPixelApp");
+                if (!dir.exists()) dir.mkdirs();
+                File image = new File(dir, filename);
+                fos = new FileOutputStream(image);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                fos.close();
+
+                // Ajout au MediaStore
+                MediaStore.Images.Media.insertImage(context.getContentResolver(), image.getAbsolutePath(), image.getName(), null);
+                Toast.makeText(context, "Image enregistrée dans la galerie", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Erreur d'enregistrement", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private static String saveBitmapToInternalStorage(Context context, Bitmap bitmap, String name) throws IOException {

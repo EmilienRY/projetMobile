@@ -91,6 +91,7 @@
                 android:background="@drawable/rounded_button" />
 
             <ImageButton
+                android:id="@+id/btnSaveToGallery"
                 android:src="@drawable/ic_download"
                 android:layout_margin="8dp"
                 android:layout_width="48dp"

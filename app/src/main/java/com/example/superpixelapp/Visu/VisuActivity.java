@@ -27,6 +27,7 @@ public class VisuActivity extends AppCompatActivity {
     private ImageButton btnDelete;
     private int imageId;
     private SuperPixelImage imageData;
+    private ImageButton btnSaveToGallery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class VisuActivity extends AppCompatActivity {
         btnDelete = findViewById(R.id.btnDelete);
         btnCompare = findViewById(R.id.btnCompare);
         btnCompress = findViewById(R.id.btnCompress);
+        btnSaveToGallery = findViewById(R.id.btnSaveToGallery);
 
         imageId = getIntent().getIntExtra("image_id", -1);
 
@@ -52,7 +54,35 @@ public class VisuActivity extends AppCompatActivity {
         loadImageData();
 
         btnDelete.setOnClickListener(v -> deleteImage());
+
+        btnCompare.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ComparaisonActivity.class);
+            intent.putExtra("original_path", imageData.originalImagePath);
+            intent.putExtra("processed_path", imageData.processedImagePath);
+            startActivity(intent);
+        });
+
+
+        btnSaveToGallery.setOnClickListener(v -> {
+            ImageSavingUtil.loadProcessedImage(this, imageData.processedImagePath,
+                    new ImageSavingUtil.ImageLoadCallback() {
+                        @Override
+                        public void onImageLoaded(Bitmap bitmap) {
+                            ImageSavingUtil.saveToGallery(VisuActivity.this, bitmap, imageData.name);
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            Toast.makeText(VisuActivity.this, "Échec du chargement de l’image", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+
+
     }
+
+
+
 
     private void loadImageData() {
         Executors.newSingleThreadExecutor().execute(() -> {

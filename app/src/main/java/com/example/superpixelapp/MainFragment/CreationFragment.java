@@ -242,14 +242,29 @@ public class CreationFragment extends Fragment {
                 nom = "Image_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
             }
 
+            String originalPath = null;
+
+            if (photoFichier != null && photoFichier.exists()) {
+                originalPath = photoFichier.getAbsolutePath(); // ✅ plus fiable
+            } else if (photoUri != null) {
+                if ("content".equals(photoUri.getScheme())) {
+                    originalPath = ImageSavingUtil.getRealPathFromUri(requireContext(), photoUri);
+                } else if ("file".equals(photoUri.getScheme())) {
+                    originalPath = new File(photoUri.getPath()).getAbsolutePath();
+                }
+            }
+
+
             ImageSavingUtil.saveProcessedImage(
                     requireContext(),
-                    photoUri,
+                    originalPath,
                     bitmapTraite,
                     nom,
                     algorithme,
                     parametres
             );
+
+
         });
 
         builder.setNegativeButton("Annuler", null);

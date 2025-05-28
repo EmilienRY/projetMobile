@@ -30,6 +30,13 @@
         <activity android:name=".Visu.VisuActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".Visu.ComparaisonActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
+            android:exported="false" />
+
+
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.superpixelapp.fileprovider"
