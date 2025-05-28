@@ -1,6 +1,8 @@
 package com.example.superpixelapp.MainFragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.superpixelapp.DataBase.BitmapConverter;
 import com.example.superpixelapp.DataBase.SuperPixelImage;
 import com.example.superpixelapp.R;
+import com.example.superpixelapp.Visu.VisuActivity;
 import com.example.superpixelapp.utils.ImageSavingUtil;
 
 import java.util.List;
@@ -31,6 +34,7 @@ public class SuperPixelAdapter extends RecyclerView.Adapter<SuperPixelAdapter.Vi
         this.images = newImages;
         notifyDataSetChanged();
     }
+
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
@@ -55,7 +59,6 @@ public class SuperPixelAdapter extends RecyclerView.Adapter<SuperPixelAdapter.Vi
         SuperPixelImage item = images.get(position);
         holder.textView.setText(item.name);
 
-        // Charger l'image de manière asynchrone
         ImageSavingUtil.loadProcessedImage(context, item.processedImagePath,
                 new ImageSavingUtil.ImageLoadCallback() {
                     @Override
@@ -68,7 +71,16 @@ public class SuperPixelAdapter extends RecyclerView.Adapter<SuperPixelAdapter.Vi
                         holder.imageView.setImageResource(R.drawable.ic_error);
                     }
                 });
+
+        // Clic pour ouvrir l'activité de visualisation
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, VisuActivity.class);
+            intent.putExtra("image_id", item.id);
+            ((Activity) context).startActivityForResult(intent, 1);
+        });
     }
+
+
 
     @Override
     public int getItemCount() {

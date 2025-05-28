@@ -1,5 +1,6 @@
 package com.example.superpixelapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -50,4 +51,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // Trouver le fragment et le forcer à recharger
+            Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (current instanceof ListFragment) {
+                ((ListFragment) current).reload(); // 🔁 fonction à ajouter dans ListFragment
+            }
+        }
+    }
+
+
+
 }

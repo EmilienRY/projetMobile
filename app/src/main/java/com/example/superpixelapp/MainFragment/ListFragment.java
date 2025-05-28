@@ -35,6 +35,11 @@ public class ListFragment extends Fragment {
         return rootView;
     }
 
+    public void reload() {
+        loadImages(); // appel direct
+    }
+
+
     private void loadImages() {
         Executors.newSingleThreadExecutor().execute(() -> {
             List<SuperPixelImage> images = DataBase.getInstance(requireContext())
@@ -46,4 +51,5 @@ public class ListFragment extends Fragment {
             });
         });
     }
+
 }

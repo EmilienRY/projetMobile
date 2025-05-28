@@ -23,4 +23,6 @@ public interface SuperPixelImageDao {
 
     @Query("DELETE FROM SuperPixelImage WHERE id = :id")
     void deleteById(int id);
+
+
 }
