@@ -1,59 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
-
-    <TextView
-        android:text="Création"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <Button
-        android:id="@+id/boutonPhoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Prendre une photo" />
-
-    <Button
-        android:id="@+id/boutonChoisir"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Choisir une image" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:adjustViewBounds="true"
-        android:scaleType="centerInside"
-        android:layout_marginTop="20dp"
-        android:background="#CCCCCC"/>
+    android:padding="16dp"
+    android:background="#FFFBEF">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+
+
+        <Button
+            android:id="@+id/boutonPhoto"
+            android:text="Prendre une photo  \uD83D\uDCF7"
+            android:background="@drawable/rounded_button"
+            android:textColor="#222222"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:layout_marginTop="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/boutonChoisir"
+            android:text="Importer une image  \u2B06\uFE0F"
+            android:background="@drawable/rounded_button"
+            android:textColor="#222222"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:layout_marginTop="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:background="#CCCCCC" />
+
+        <!-- Algorithme -->
+        <EditText
+            android:id="@+id/choixAlgo"
+            android:hint="Choix de l'algorithme (e.g., watershed, slic)"
+            android:text="watershed"
+            android:layout_marginTop="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Paramètre 1 -->
+        <EditText
+            android:id="@+id/param1"
+            android:hint="Taille minimale"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number" />
+
+        <!-- Paramètre 2 (uniquement pour SLIC) -->
+        <EditText
+            android:id="@+id/param2"
+            android:hint="Paramètre 2 (SLIC uniquement)"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:inputType="number" />
+
+        <!-- Nom de l'image -->
+        <EditText
+            android:id="@+id/editTextNom"
+            android:hint="Nom de l'image"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Valider -->
         <Button
             android:id="@+id/boutonValider"
+            android:text="Valider"
+            android:background="@drawable/rounded_button"
+            android:textColor="#222222"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Valider" />
+            android:layout_gravity="center"/>
 
-        <Button
-            android:id="@+id/boutonSauvegarder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Sauvegarder"
-            android:enabled="false" />
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

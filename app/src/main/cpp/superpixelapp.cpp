@@ -1,189 +1,258 @@
 #include <jni.h>
 #include <android/log.h>
 #include <vector>
+#include <queue>
+#include <cmath>
+#include <limits>
+#include <map>
+
+#define LOG_TAG "SUPERPIXEL_NATIVE"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+
+struct Vec2 { int x, y; Vec2(int _x, int _y) : x(_x), y(_y) {} };
+struct Vec3 {
+    float r, g, b;
+    Vec3() : r(0), g(0), b(0) {}
+    Vec3(float _r, float _g, float _b) : r(_r), g(_g), b(_b) {}
+    Vec3 operator+(const Vec3 &v) const { return Vec3(r + v.r, g + v.g, b + v.b); }
+    Vec3 operator-(const Vec3 &v) const { return Vec3(r - v.r, g - v.g, b - v.b); }
+    Vec3 operator/(float s) const { return Vec3(r / s, g / s, b / s); }
+    Vec3 operator*(float s) const { return Vec3(r * s, g * s, b * s); }
+    void operator+=(const Vec3 &v) { r += v.r; g += v.g; b += v.b; }
+    float norm() const { return sqrt(r * r + g * g + b * b); }
+};
+
+struct SuperPixel {
+    std::vector<Vec2> pixels;
+    Vec3 meanColor;
+};
+
+static inline int clampInt(int v, int lo, int hi) {
+    return std::min(hi, std::max(lo, v));
+}
+static inline float clampF(float v, float lo, float hi) {
+    return std::min(hi, std::max(lo, v));
+}
+
+void filtreGaussien(const std::vector<float> &in, std::vector<float> &out, int width, int height, int rayon) {
+    // Calcul du noyau
+    int ksize = 2 * rayon + 1;
+    std::vector<std::vector<float>> kernel(ksize, std::vector<float>(ksize));
+    float sigma = rayon / 2.0f;
+    float somme = 0.0f;
+    for (int i = -rayon; i <= rayon; ++i)
+        for (int j = -rayon; j <= rayon; ++j) {
+            float v = std::exp(-(i * i + j * j) / (2 * sigma * sigma));
+            kernel[i + rayon][j + rayon] = v;
+            somme += v;
+        }
+    for (int i = 0; i < ksize; ++i)
+        for (int j = 0; j < ksize; ++j)
+            kernel[i][j] /= somme;
+
+    // Convolution
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            float sum = 0, wsum = 0;
+            for (int i = -rayon; i <= rayon; ++i) {
+                for (int j = -rayon; j <= rayon; ++j) {
+                    int ny = clampInt(y + i, 0, height - 1);
+                    int nx = clampInt(x + j, 0, width - 1);
+                    float w = kernel[i + rayon][j + rayon];
+                    sum += in[ny * width + nx] * w;
+                    wsum += w;
+                }
+            }
+            out[y * width + x] = sum / wsum;
+        }
+    }
+}
+
+void gradientSobel(const std::vector<float> &img, std::vector<uint8_t> &gradient, int width, int height) {
+    int sobelX[3][3] = { {-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1} };
+    int sobelY[3][3] = { {-1, -2, -1}, {0, 0, 0}, {1, 2, 1} };
+    for (int y = 1; y < height - 1; ++y) {
+        for (int x = 1; x < width - 1; ++x) {
+            float gx = 0, gy = 0;
+            for (int i = -1; i <= 1; ++i)
+                for (int j = -1; j <= 1; ++j) {
+                    float pix = img[(y + i) * width + (x + j)];
+                    gx += pix * sobelX[i + 1][j + 1];
+                    gy += pix * sobelY[i + 1][j + 1];
+                }
+            int g = (int)std::sqrt(gx * gx + gy * gy);
+            gradient[y * width + x] = (uint8_t)clampInt(g, 0, 255);
+        }
+    }
+}
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_superpixelapp_MainFragment_CompressionFragment_traiterImageNative(
-        JNIEnv *env, jobject thiz, jintArray pixels, jint width, jint height) {
+Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatershed(
+        JNIEnv *env, jobject thiz, jintArray pixels_, jint width, jint height, jint minSize) {
 
-    jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
-    int taille = width * height;
-    __android_log_print(ANDROID_LOG_DEBUG, "NATIVE_DEBUG", "Appel de traiterImageNative OK");
+    jint* pixels = env->GetIntArrayElements(pixels_, nullptr);
+    if (!pixels) return;
 
-    for (int i = 0; i < taille; i++) {
-        jint pixel = tabPixels[i];
+    std::vector<Vec3> imgIn(width * height);
+    std::vector<float> grey(width * height);         // Grayscale float
+    std::vector<float> greyFlou(width * height);     // Flouté
+    std::vector<uint8_t> gradient(width * height);   // Gradient final
+    std::vector<std::vector<int>> labels(height, std::vector<int>(width, -1));
 
-        // Décomposer la couleur
-        int a = (pixel >> 24) & 0xff;
+    // ARGB -> RGB + Grayscale
+    for (int i = 0; i < width * height; i++) {
+        int pixel = pixels[i];
         int r = (pixel >> 16) & 0xff;
         int g = (pixel >> 8) & 0xff;
-        int b = pixel & 0xff;
-
-        // Inverser les couleurs
-        r = 255 - r;
-        g = 255 - g;
-        b = 255 - b;
-
-        // Recomposer
-        tabPixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
+        int b = (pixel) & 0xff;
+        imgIn[i] = Vec3(r, g, b);
+        grey[i] = 0.3f * r + 0.59f * g + 0.11f * b;
     }
 
-    env->ReleaseIntArrayElements(pixels, tabPixels, 0);
-}
+    // Flou gaussien sur grey
+    int rayonGaussien = 1; // ou paramétrable
+    filtreGaussien(grey, greyFlou, width, height, rayonGaussien);
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageNative(
-        JNIEnv *env, jobject thiz, jintArray pixels, jint width, jint height) {
+    // Gradient Sobel sur greyFlou
+    gradientSobel(greyFlou, gradient, width, height);
 
-jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
-int taille = width * height;
-__android_log_print(ANDROID_LOG_DEBUG, "NATIVE_DEBUG", "Appel de traiterImageNative OK");
-
-for (int i = 0; i < taille; i++) {
-jint pixel = tabPixels[i];
-
-// Décomposer la couleur
-int a = (pixel >> 24) & 0xff;
-int r = (pixel >> 16) & 0xff;
-int g = (pixel >> 8) & 0xff;
-int b = pixel & 0xff;
-
-// Inverser les couleurs
-r = 255 - r;
-g = 255 - g;
-b = 255 - b;
-
-// Recomposer
-tabPixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
-}
-
-env->ReleaseIntArrayElements(pixels, tabPixels, 0);
-}
-
-using namespace std;
-
-bool testConvergence(vector<vector<int>> centroids, vector<vector<int>> newCentroid){
-    for(int i=0; i<centroids.size(); i++){
-        if(centroids[i][0]-newCentroid[i][0]>=0.1 && centroids[i][1]-newCentroid[i][1]>=0.1 && centroids[i][2]-newCentroid[i][2]>=0.1){
-            return false;
-        }
-    }
-    return true;
-}
-
-void kmean(vector<int> ImgIn, vector<int> ImgOUT, vector<vector<int>> centroids, int taille){
-    int indexMin;
-    for(int i=0; i<taille; i+=3){
-        indexMin=0;
-        vector<int> pixel = {ImgIn[i],ImgIn[i+1],ImgIn[i+2]};
-        float d2norm = numeric_limits<float>::max();
-
-        for (int centroid = 0; centroid < centroids.size(); centroid++) {
-            float d1norm = sqrt(
-                    pow((centroids[centroid][0]) - (pixel[0]), 2) +
-                    pow(static_cast<int>(centroids[centroid][1]) - static_cast<int>(pixel[1]), 2) +
-                    pow(static_cast<int>(centroids[centroid][2]) - static_cast<int>(pixel[2]), 2)
-            );
-
-            if (d1norm < d2norm) {
-                d2norm = d1norm;
-                indexMin = centroid;
+    // Détection des marqueurs (minima locaux, smooth groupé)
+    std::vector<Vec2> markers;
+    std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
+    int threshold = 1; // correspond à ta version de base
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            if (visited[y][x]) continue;
+            int g = gradient[y * width + x];
+            if (g < gradient[y * width + (x - 1)] &&
+                g < gradient[y * width + (x + 1)] &&
+                g < gradient[(y - 1) * width + x] &&
+                g < gradient[(y + 1) * width + x]) {
+                std::queue<Vec2> q;
+                q.push(Vec2(x, y));
+                visited[y][x] = true;
+                int sumX = x, sumY = y, count = 1;
+                while (!q.empty()) {
+                    Vec2 curr = q.front(); q.pop();
+                    for (auto& d : std::vector<Vec2>{{1,0},{-1,0},{0,1},{0,-1}}) {
+                        int nx = curr.x + d.x, ny = curr.y + d.y;
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && !visited[ny][nx]) {
+                            int ng = gradient[ny * width + nx];
+                            if (std::abs(ng - g) < threshold) {
+                                visited[ny][nx] = true;
+                                q.push(Vec2(nx, ny));
+                                sumX += nx; sumY += ny; count++;
+                            }
+                        }
+                    }
+                }
+                markers.emplace_back(sumX / count, sumY / count);
             }
         }
-        ImgOUT[i]=centroids[indexMin][0];
-        ImgOUT[i + 1]=centroids[indexMin][1];
-        ImgOUT[i + 2]=centroids[indexMin][2];
-    }
-}
-
-void kmeanConv(vector<int> imgSuperPixel, vector<int>ImgOUT, vector<int> ImgCompresse, int taille){
-    vector<vector<vector<int>>> clusters;
-    vector<vector<int>> centroids;
-
-    for (int i = 0; i < 256; i++) {
-        centroids.push_back({rand() % 256, rand() % 256, rand() % 256});
     }
 
-    // Initialisation des clusters
-    clusters.resize(centroids.size());
+    // Watershed
+    std::queue<Vec2> q;
+    for (int i = 0; i < markers.size(); ++i) {
+        int x = markers[i].x, y = markers[i].y;
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            labels[y][x] = i;
+            q.push(Vec2(x, y));
+        }
+    }
+    int dirs[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    while (!q.empty()) {
+        Vec2 curr = q.front(); q.pop();
+        int label = labels[curr.y][curr.x];
+        for (auto& d : dirs) {
+            int nx = curr.x + d[0], ny = curr.y + d[1];
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && labels[ny][nx] == -1) {
+                labels[ny][nx] = label;
+                q.push(Vec2(nx, ny));
+            }
+        }
+    }
 
-    bool converged = false;
+    // Superpixels, couleurs moyennes
+    std::vector<SuperPixel> superPixels(markers.size());
+    std::vector<int> sizes(markers.size(), 0);
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++) {
+            int label = labels[y][x];
+            if (label >= 0) {
+                superPixels[label].pixels.emplace_back(x, y);
+                superPixels[label].meanColor += imgIn[y * width + x];
+                sizes[label]++;
+            }
+        }
+    for (int i = 0; i < superPixels.size(); i++)
+        if (sizes[i] > 0)
+            superPixels[i].meanColor = superPixels[i].meanColor / sizes[i];
 
-    while (!converged) {
-
-        for (int i = 0; i < taille; i+=3) {
-            vector<int> pixel = {
-                    imgSuperPixel[i],
-                    imgSuperPixel[i + 1],
-                    imgSuperPixel[i + 2]
-            };
-
-            int indexMin = 0;
-            float distanceMin = numeric_limits<float>::max();
-
-            for (int centroid = 0; centroid < centroids.size(); centroid++) {
-                float distance = sqrt(
-                        pow(centroids[centroid][0] - pixel[0], 2) +
-                        pow(centroids[centroid][1] - pixel[1], 2) +
-                        pow(centroids[centroid][2] - pixel[2], 2)
-                );
-
-                if (distance < distanceMin) {
-                    distanceMin = distance;
-                    indexMin = centroid;
+    // --- Fusion des superpixels trop petits ---
+    bool fusionActive = true;
+    while (fusionActive) {
+        fusionActive = false;
+        for (int i = 0; i < superPixels.size(); i++) {
+            if (sizes[i] > 0 && sizes[i] < minSize) {
+                // Cherche le voisin le plus proche en couleur
+                std::map<int, float> voisinDist;
+                for (auto& p : superPixels[i].pixels) {
+                    for (auto& d : dirs) {
+                        int nx = p.x + d[0], ny = p.y + d[1];
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            int voisin = labels[ny][nx];
+                            if (voisin != i && voisin != -1 && sizes[voisin] > 0) {
+                                if (voisinDist.count(voisin) == 0)
+                                    voisinDist[voisin] = (superPixels[i].meanColor - superPixels[voisin].meanColor).norm();
+                            }
+                        }
+                    }
+                }
+                if (!voisinDist.empty()) {
+                    int best = -1;
+                    float bestDist = std::numeric_limits<float>::max();
+                    for (auto& [voisin, dist] : voisinDist) {
+                        if (dist < bestDist) {
+                            best = voisin;
+                            bestDist = dist;
+                        }
+                    }
+                    for (auto& p : superPixels[i].pixels) {
+                        labels[p.y][p.x] = best;
+                        superPixels[best].pixels.push_back(p);
+                        superPixels[best].meanColor += imgIn[p.y * width + p.x];
+                        sizes[best]++;
+                    }
+                    superPixels[i].pixels.clear();
+                    sizes[i] = 0;
+                    fusionActive = true;
                 }
             }
-
-            if (indexMin < clusters.size()) {
-                clusters[indexMin].push_back(pixel);
-            }
+        }
+    }
+    // Recalcule la couleur moyenne finale
+    for (int i = 0; i < superPixels.size(); i++)
+        if (sizes[i] > 0) {
+            Vec3 colorSum(0, 0, 0);
+            for (auto& p : superPixels[i].pixels)
+                colorSum += imgIn[p.y * width + p.x];
+            superPixels[i].meanColor = colorSum / sizes[i];
         }
 
-        vector<vector<int>> newCentroids;
-        for (int i = 0; i < clusters.size(); i++) {
-            if (clusters[i].empty()) {
-                newCentroids.push_back(centroids[i]);
+    // Génération du résultat
+    for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++) {
+            int label = labels[y][x];
+            if (label >= 0 && sizes[label] > 0) {
+                Vec3 c = superPixels[label].meanColor;
+                pixels[y * width + x] = (0xFF << 24) | (int(c.r) << 16) | (int(c.g) << 8) | int(c.b);
             } else {
-                int sommeRed = 0, sommeGreen = 0, sommeBlue = 0;
-                for (const auto &pixel : clusters[i]) {
-                    sommeRed += pixel[0];
-                    sommeGreen += pixel[1];
-                    sommeBlue += pixel[2];
-                }
-
-                newCentroids.push_back({
-                                               sommeRed / static_cast<int>(clusters[i].size()),
-                                               sommeGreen / static_cast<int>(clusters[i].size()),
-                                               sommeBlue / static_cast<int>(clusters[i].size())
-                                       });
+                pixels[y * width + x] = 0xFF000000;
             }
         }
 
-        converged = testConvergence(centroids, newCentroids);
-        centroids = newCentroids;
-    }
-
-    kmean(imgSuperPixel,ImgOUT,centroids,taille);
-    for (int index=0; index<taille; index+=3){
-        vector<int> pixel = {ImgOUT[index],ImgOUT[index+1],ImgOUT[index+2]};
-        for (int i=0; i<centroids.size(); i++){
-            if (pixel[0]==centroids[i][0]&&pixel[1]==centroids[i][1]&&pixel[2]==centroids[i][2]){
-                ImgCompresse[index/3]=i;
-            }
-        }
-    }
+    env->ReleaseIntArrayElements(pixels_, pixels, 0);
+    LOGD("Traitement Watershed fini (gauss+sobel) : %d superpixels, minSize=%d", (int)markers.size(), minSize);
 }
-
-// In MainActivity.java:
-//    static {
-//       System.loadLibrary("superpixelapp");
-//    }
-//
-// Or, in MainActivity.kt:
-//    companion object {
-//      init {
-//         System.loadLibrary("superpixelapp")
-//      }
-//    }
