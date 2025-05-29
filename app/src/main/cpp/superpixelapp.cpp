@@ -5,6 +5,8 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <sstream>
+
 
 #define LOG_TAG "SUPERPIXEL_NATIVE"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -256,3 +258,152 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
     env->ReleaseIntArrayElements(pixels_, pixels, 0);
     LOGD("Traitement Watershed fini (gauss+sobel) : %d superpixels, minSize=%d", (int)markers.size(), minSize);
 }
+
+bool testConvergence(const std::vector<std::vector<int>>& oldCentroids, const std::vector<std::vector<int>>& newCentroids) {
+    const int epsilonSq = 1;
+    for (size_t i = 0; i < oldCentroids.size(); ++i) {
+        int dr = oldCentroids[i][0] - newCentroids[i][0];
+        int dg = oldCentroids[i][1] - newCentroids[i][1];
+        int db = oldCentroids[i][2] - newCentroids[i][2];
+        int distSq = dr * dr + dg * dg + db * db;
+        if (distSq > epsilonSq) return false;
+    }
+    return true;
+}
+
+
+extern "C" JNIEXPORT jintArray  JNICALL
+Java_com_example_superpixelapp_MainFragment_CompressionFragment_compression(
+        JNIEnv* env, jobject /* this */, jintArray pixels, jint width, jint height) {
+
+    jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
+    int taille = width * height;
+    LOGD("Appel de CompressionPallette OK");
+
+    // Initialisation des centroïdes
+    const int k = 256;
+    std::vector<std::vector<int>> centroids(k, std::vector<int>(3));
+    for (int i = 0; i < k; ++i) {
+        centroids[i][0] = rand() % 256;
+        centroids[i][1] = rand() % 256;
+        centroids[i][2] = rand() % 256;
+    }
+
+    bool converged = false;
+    std::vector<std::vector<std::vector<int>>> clusters(k);
+    std::vector<std::vector<int>> newCentroids(k, std::vector<int>(3, 0));
+    int iteration=0;
+
+    while (!converged and iteration<10) {
+        // Réinitialiser les clusters
+        for (auto& cluster : clusters) {
+            cluster.clear();
+        }
+
+        // Attribution des pixels aux clusters
+        for (int i = 0; i < taille; ++i) {
+            jint pixel = tabPixels[i];
+            int r = (pixel >> 16) & 0xff;
+            int g = (pixel >> 8) & 0xff;
+            int b = pixel & 0xff;
+
+            int indexMin = 0;
+            float distanceMin = std::numeric_limits<float>::max();
+
+            for (int c = 0; c < k; ++c) {
+                int dr = centroids[c][0] - r;
+                int dg = centroids[c][1] - g;
+                int db = centroids[c][2] - b;
+                int distance = dr * dr + dg * dg + db * db;
+
+
+                if (distance < distanceMin) {
+                    distanceMin = distance;
+                    indexMin = c;
+                }
+            }
+
+            clusters[indexMin].push_back({r, g, b});
+        }
+
+        // Calcul des nouveaux centroïdes
+        for (int i = 0; i < k; ++i) {
+            newCentroids[i][0] = 0;
+            newCentroids[i][1] = 0;
+            newCentroids[i][2] = 0;
+        }
+
+        for (int i = 0; i < k; ++i) {
+            if (!clusters[i].empty()) {
+                int sumR = 0, sumG = 0, sumB = 0;
+                for (const auto& pixel : clusters[i]) {
+                    sumR += pixel[0];
+                    sumG += pixel[1];
+                    sumB += pixel[2];
+                }
+                int clusterSize = clusters[i].size();
+                newCentroids[i][0] = sumR / clusterSize;
+                newCentroids[i][1] = sumG / clusterSize;
+                newCentroids[i][2] = sumB / clusterSize;
+            } else {
+                newCentroids[i] = centroids[i];
+            }
+        }
+
+        converged = testConvergence(centroids, newCentroids);
+        centroids = newCentroids;
+        iteration++;
+        std::ostringstream oss;
+        oss << "Itération : " << iteration;
+        LOGD("%s", oss.str().c_str());
+    }
+    LOGD("Convergence Atteinte");
+
+    // Application des centroïdes aux pixels
+
+    std::vector<jint> clusterGrayMap(taille);
+
+    for (int i = 0; i < taille; ++i) {
+        jint pixel = tabPixels[i];
+        int a = (pixel >> 24) & 0xff;
+        int r = (pixel >> 16) & 0xff;
+        int g = (pixel >> 8) & 0xff;
+        int b = pixel & 0xff;
+
+        int indexMin = 0;
+        float distanceMin = std::numeric_limits<float>::max();
+
+        for (int c = 0; c < k; ++c) {
+            float distance = std::sqrt(
+                    std::pow(centroids[c][0] - r, 2) +
+                    std::pow(centroids[c][1] - g, 2) +
+                    std::pow(centroids[c][2] - b, 2)
+            );
+            if (distance < distanceMin) {
+                distanceMin = distance;
+                indexMin = c;
+            }
+        }
+
+        int newR = centroids[indexMin][0];
+        int newG = centroids[indexMin][1];
+        int newB = centroids[indexMin][2];
+        tabPixels[i] = (a << 24) | (newR << 16) | (newG << 8) | newB;
+
+        // Génération de la carte des clusters en niveau de gris
+        int gray = indexMin; // ∈ [0,255]
+        clusterGrayMap[i] = (0xFF << 24) | (gray << 16) | (gray << 8) | gray;
+    }
+
+    env->ReleaseIntArrayElements(pixels, tabPixels, 0);
+
+    // Convertir clusterMap en jintArray
+    jintArray grayArray = env->NewIntArray(taille);
+    env->SetIntArrayRegion(grayArray, 0, taille, clusterGrayMap.data());
+
+    LOGD("Compression Pallette Terminée");
+
+    return grayArray;
+
+}
+

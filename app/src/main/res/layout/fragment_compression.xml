@@ -21,7 +21,16 @@
         android:text="Choisir une image" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/imageViewCarte"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:layout_marginTop="20dp"
+        android:background="#CCCCCC"/>
+
+    <ImageView
+        android:id="@+id/imageViewComp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
