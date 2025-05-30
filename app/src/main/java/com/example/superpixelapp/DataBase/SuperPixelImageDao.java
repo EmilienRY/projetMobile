@@ -18,6 +18,10 @@ public interface SuperPixelImageDao {
     @Query("SELECT * FROM SuperPixelImage WHERE id = :id")
     SuperPixelImage getById(int id);
 
+    @Query("SELECT * FROM SuperPixelImage WHERE name = :nom LIMIT 1")
+    SuperPixelImage getImageByNom(String nom);
+
+
     @Delete
     void delete(SuperPixelImage image);
 

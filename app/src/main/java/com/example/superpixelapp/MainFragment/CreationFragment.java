@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.example.superpixelapp.DataBase.DataBase;
+import com.example.superpixelapp.DataBase.SuperPixelImage;
+import com.example.superpixelapp.MainActivity;
 import com.example.superpixelapp.R;
 import com.example.superpixelapp.utils.ImageSavingUtil;
 
@@ -32,15 +36,17 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class CreationFragment extends Fragment {
     private ImageView imageView;
-    private Button boutonPhoto, boutonChoisir, boutonValider;
+    private Button boutonPhoto, boutonChoisir, boutonValider, boutonCompression;
     private EditText editTextNom, choixAlgo, param1, param2;
     private Bitmap bitmapSelectionne, bitmapTraite;
     private Uri photoUri;
     private File photoFichier;
 
+    private SuperPixelImage imageData;
     private TextView textViewInfosImage; // AJOUT
     private ActivityResultLauncher<Intent> launcherGalerie, launcherCamera;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
@@ -61,6 +67,7 @@ public class CreationFragment extends Fragment {
         boutonPhoto = vue.findViewById(R.id.boutonPhoto);
         boutonChoisir = vue.findViewById(R.id.boutonChoisir);
         boutonValider = vue.findViewById(R.id.boutonValider);
+        boutonCompression = vue.findViewById(R.id.boutonCompression);
         editTextNom = vue.findViewById(R.id.editTextNom);
         choixAlgo = vue.findViewById(R.id.choixAlgo);
         param1 = vue.findViewById(R.id.param1);
@@ -69,6 +76,7 @@ public class CreationFragment extends Fragment {
         textViewInfosImage = vue.findViewById(R.id.textViewInfosImage); // AJOUT
 
         boutonValider.setEnabled(false);
+        boutonCompression.setEnabled(false);
         param2.setVisibility(View.GONE);
 
         // Adaptation des champs selon algo
@@ -141,6 +149,27 @@ public class CreationFragment extends Fragment {
             }
         });
 
+        boutonCompression.setOnClickListener(v -> {
+            if (imageData != null && imageData.processedImagePath != null) {
+                String imagePath = imageData.processedImagePath;
+
+                Fragment compressionFragment = new CompressionFragment();
+                Bundle args = new Bundle();
+                args.putString("image_path", imagePath);
+                compressionFragment.setArguments(args);
+
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, compressionFragment)
+                        .addToBackStack(null)
+                        .commit();
+            } else {
+                Toast.makeText(getContext(), "Erreur : image non disponible", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
         return vue;
     }
 
@@ -186,6 +215,7 @@ public class CreationFragment extends Fragment {
 
         bitmapTraite = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
         imageView.setImageBitmap(bitmapTraite);
+        boutonCompression.setEnabled(true);
         return bitmapTraite;
     }
 
@@ -201,8 +231,37 @@ public class CreationFragment extends Fragment {
             originalPath = photoFichier.getAbsolutePath();
         }
 
+        // Sauvegarde l'image traitée
         ImageSavingUtil.saveProcessedImage(requireContext(), originalPath, bitmapTraite, nom, algo, parametres);
+
+        boutonCompression.setEnabled(false); // désactivé par défaut
+
+        String finalNom = nom;
+        Executors.newSingleThreadExecutor().execute(() -> {
+            // Attend que l'image soit bien enregistrée
+            SuperPixelImage img = null;
+            for (int i = 0; i < 10; i++) { // Essaie jusqu'à 10 fois (max ~1 sec)
+                img = DataBase.getInstance(requireContext())
+                        .superPixelImageDao()
+                        .getImageByNom(finalNom);
+                if (img != null) break;
+                try {
+                    Thread.sleep(100); // petite pause entre essais
+                } catch (InterruptedException ignored) {}
+            }
+
+            SuperPixelImage finalImg = img;
+            requireActivity().runOnUiThread(() -> {
+                if (finalImg != null) {
+                    imageData = finalImg;
+                    boutonCompression.setEnabled(true); // actif seulement si tout est prêt
+                } else {
+                    Toast.makeText(getContext(), "Erreur lors de l'enregistrement en base", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
+
 
 
     private void verifierEtPrendrePhoto() {
