@@ -24,5 +24,6 @@
     <string name="image_info">Format: %1$s\nResolution: %2$d x %3$d px\nSize: %4$s KB</string>
     <string name="nbClusters">Number of clusters</string>
     <string name="spatialRes">Spatial resolution</string>
+    <string name="ColorsMap"> Colors map </string>
 
 </resources>

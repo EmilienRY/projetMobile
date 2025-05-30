@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -84,6 +85,7 @@ public class CompressionFragment extends Fragment {
                 Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
                 if (bitmap != null) {
                     imageViewComp.setImageBitmap(bitmap);
+                    imageViewComp.setBackgroundColor(Color.TRANSPARENT);
                     bitmapSelectionne = bitmap;
                     boutonValider.setEnabled(true);
                     boutonChoisir.setEnabled(false); // On désactive choisir si image pré-sélectionnée
@@ -101,24 +103,11 @@ public class CompressionFragment extends Fragment {
                         try {
                             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                             bitmapSelectionne = bitmap;
-                            if (bitmap.getWidth() > 2000 || bitmap.getHeight() > 2000) {
-                                int newWidth = bitmap.getWidth() / 3;
-                                int newHeight = bitmap.getHeight() / 3;
-                                Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-                                imageViewComp.setImageBitmap(bitmapReduit);
-                                //bitmapSelectionne = bitmapReduit;
-                                boutonValider.setEnabled(true);
-                            } else if ((bitmap.getWidth() > 1000 || bitmap.getHeight() > 1000) && bitmap.getWidth() < 2000 && bitmap.getHeight() < 2000) {
-                                int newWidth = bitmap.getWidth() / 2;
-                                int newHeight = bitmap.getHeight() / 2;
-                                Bitmap bitmapReduit = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-                                imageViewComp.setImageBitmap(bitmapReduit);
-                                //bitmapSelectionne = bitmapReduit;
-                                boutonValider.setEnabled(true);
-                            } else {
+
                                 imageViewComp.setImageBitmap(bitmap);
+                                imageViewComp.setBackgroundColor(Color.TRANSPARENT);
                                 boutonValider.setEnabled(true);
-                            }
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -211,6 +200,7 @@ public class CompressionFragment extends Fragment {
                                     if (outputPath != null) {
                                         Bitmap imgComp = BitmapFactory.decodeFile(outputPath);
                                         imageViewCarte.setImageBitmap(imgComp);
+                                        imageViewCarte.setBackgroundColor(Color.TRANSPARENT);
                                         // Remet l'original dans imageViewComp
                                         imageViewComp.setImageBitmap(bitmap);
                                         Toast.makeText(getContext(), "Compression terminée !", Toast.LENGTH_SHORT).show();

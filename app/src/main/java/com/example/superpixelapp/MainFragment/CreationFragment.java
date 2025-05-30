@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -94,6 +95,7 @@ public class CreationFragment extends Fragment {
                             Bitmap bitmap = BitmapFactory.decodeStream(requireContext().getContentResolver().openInputStream(photoUri));
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
+                            imageView.setBackgroundColor(Color.TRANSPARENT);
                             afficherInfosImage(photoUri, bitmapSelectionne); // AJOUT
                             boutonValider.setEnabled(true);
                         } catch (IOException e) {
@@ -116,6 +118,7 @@ public class CreationFragment extends Fragment {
 
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
+                            imageView.setBackgroundColor(Color.TRANSPARENT);
                             afficherInfosImage(Uri.fromFile(new File(appPath)), bitmapSelectionne); // Utilise Uri du fichier copié
                             boutonValider.setEnabled(true);
 
@@ -171,6 +174,7 @@ public class CreationFragment extends Fragment {
             traiterImageWatershed(pixels, width, height, minSize);
             bitmapTraite = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
             imageView.setImageBitmap(bitmapTraite);
+            imageView.setBackgroundColor(Color.TRANSPARENT);
             sauvegarderImage(nom, "Watershed", "minSize=" + minSize);
         }
         else if (algo.equals("slic")) {
