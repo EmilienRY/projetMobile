@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="#FFFBEF"
     android:padding="16dp">
 
     <TextView
@@ -17,6 +18,7 @@
     <Button
         android:id="@+id/boutonChoisir"
         android:layout_width="wrap_content"
+        android:background="@drawable/rounded_button"
         android:layout_height="wrap_content"
         android:text="Choisir une image" />
 
@@ -38,9 +40,19 @@
         android:layout_marginTop="20dp"
         android:background="#CCCCCC"/>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        android:layout_marginTop="24dp" />
+
 
     <Button
         android:id="@+id/boutonValider"
+        android:background="@drawable/rounded_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Valider" />

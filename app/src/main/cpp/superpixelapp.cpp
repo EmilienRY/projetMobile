@@ -273,7 +273,7 @@ bool testConvergence(const std::vector<std::vector<int>>& oldCentroids, const st
 
 
 extern "C" JNIEXPORT jintArray  JNICALL
-Java_com_example_superpixelapp_MainFragment_CompressionFragment_compression(
+Java_com_example_superpixelapp_worker_CompressionWorker_compression(
         JNIEnv* env, jobject /* this */, jintArray pixels, jint width, jint height) {
 
     jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);

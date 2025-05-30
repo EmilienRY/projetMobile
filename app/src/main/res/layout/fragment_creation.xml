@@ -52,6 +52,19 @@
             android:adjustViewBounds="true"
             android:background="#CCCCCC" />
 
+        <TextView
+            android:id="@+id/textViewInfosImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#777777"
+            android:textSize="14sp"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="4dp"
+            android:text=""
+            android:background="@android:color/transparent" />
+
+
         <!-- Algorithme -->
         <EditText
             android:id="@+id/choixAlgo"

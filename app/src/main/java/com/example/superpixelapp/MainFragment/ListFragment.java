@@ -30,6 +30,8 @@ public class ListFragment extends Fragment {
         adapter = new SuperPixelAdapter(new ArrayList<>(), requireContext());
         recyclerView.setAdapter(adapter);
 
+
+
         loadImages();
 
         return rootView;

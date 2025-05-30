@@ -19,6 +19,7 @@ import com.example.superpixelapp.DataBase.SuperPixelImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -122,6 +123,24 @@ public class ImageSavingUtil {
             Toast.makeText(context, "Erreur d'enregistrement", Toast.LENGTH_SHORT).show();
         }
     }
+
+    // Ajoute dans ImageSavingUtil.java
+    public static String copyToAppInternal(Context context, Uri sourceUri, String fileName) throws IOException {
+        File destDir = context.getExternalFilesDir("SuperPixelImages");
+        if (!destDir.exists()) destDir.mkdirs();
+        File destFile = new File(destDir, fileName);
+
+        try (InputStream in = context.getContentResolver().openInputStream(sourceUri);
+             OutputStream out = new FileOutputStream(destFile)) {
+            byte[] buf = new byte[4096];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        }
+        return destFile.getAbsolutePath();
+    }
+
 
     private static String saveBitmapToInternalStorage(Context context, Bitmap bitmap, String name) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());

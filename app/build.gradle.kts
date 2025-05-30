@@ -47,16 +47,21 @@ android {
 
 android.sourceSets["main"].jniLibs.srcDirs("src/main/jniLibs")
 
-
 dependencies {
-    implementation(libs.room.runtime) // ou version récente
-    annotationProcessor(libs.room.compiler)
+    // ----------- LIBS ESSENTIELLES -----------
 
+    implementation(libs.core.ktx)
+    implementation(libs.core)
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+    implementation(libs.work.runtime)
     implementation(libs.material.v1100)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.room.common.jvm)
     implementation(libs.room.runtime.android)
+
+    // ---------- TESTS ----------
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

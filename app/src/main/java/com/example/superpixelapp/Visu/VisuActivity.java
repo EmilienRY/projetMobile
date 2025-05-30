@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.superpixelapp.DataBase.DataBase;
 import com.example.superpixelapp.DataBase.SuperPixelImage;
+import com.example.superpixelapp.MainActivity;
 import com.example.superpixelapp.R;
 import com.example.superpixelapp.utils.ImageSavingUtil;
 
@@ -61,6 +62,16 @@ public class VisuActivity extends AppCompatActivity {
             intent.putExtra("processed_path", imageData.processedImagePath);
             startActivity(intent);
         });
+
+        btnCompress.setOnClickListener(v -> {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("goto_compression", true);
+            intent.putExtra("image_path", imageData.processedImagePath); // ou originalImagePath selon ton choix
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // optionnel : évite d’empiler les MainActivity
+            startActivity(intent);
+            finish(); // optionnel, ferme VisuActivity
+        });
+
 
 
         btnSaveToGallery.setOnClickListener(v -> {

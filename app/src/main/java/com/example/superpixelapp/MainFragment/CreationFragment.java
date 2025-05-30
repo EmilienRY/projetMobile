@@ -2,12 +2,14 @@ package com.example.superpixelapp.MainFragment;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +40,7 @@ public class CreationFragment extends Fragment {
     private Uri photoUri;
     private File photoFichier;
 
+    private TextView textViewInfosImage; // AJOUT
     private ActivityResultLauncher<Intent> launcherGalerie, launcherCamera;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
 
@@ -61,6 +64,8 @@ public class CreationFragment extends Fragment {
         choixAlgo = vue.findViewById(R.id.choixAlgo);
         param1 = vue.findViewById(R.id.param1);
         param2 = vue.findViewById(R.id.param2);
+
+        textViewInfosImage = vue.findViewById(R.id.textViewInfosImage); // AJOUT
 
         boutonValider.setEnabled(false);
         param2.setVisibility(View.GONE);
@@ -89,6 +94,7 @@ public class CreationFragment extends Fragment {
                             Bitmap bitmap = BitmapFactory.decodeStream(requireContext().getContentResolver().openInputStream(photoUri));
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
+                            afficherInfosImage(photoUri, bitmapSelectionne); // AJOUT
                             boutonValider.setEnabled(true);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -103,15 +109,25 @@ public class CreationFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         photoUri = result.getData().getData();
                         try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
+                            // Copie l'image dans le dossier interne de l'app
+                            String fileName = "import_" + System.currentTimeMillis() + ".jpg";
+                            String appPath = ImageSavingUtil.copyToAppInternal(requireContext(), photoUri, fileName);
+                            Bitmap bitmap = BitmapFactory.decodeFile(appPath);
+
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
+                            afficherInfosImage(Uri.fromFile(new File(appPath)), bitmapSelectionne); // Utilise Uri du fichier copié
                             boutonValider.setEnabled(true);
+
+                            // Met à jour photoUri pour pointer vers le fichier local (pour sauvegarder en BDD)
+                            photoUri = Uri.fromFile(new File(appPath));
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 });
+
 
         boutonPhoto.setOnClickListener(view -> verifierEtPrendrePhoto());
         boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
@@ -157,7 +173,7 @@ public class CreationFragment extends Fragment {
             imageView.setImageBitmap(bitmapTraite);
             sauvegarderImage(nom, "Watershed", "minSize=" + minSize);
         }
-         else if (algo.equals("slic")) {
+        else if (algo.equals("slic")) {
             // En attente d’implémentation
             Toast.makeText(getContext(), "SLIC non encore implémenté", Toast.LENGTH_SHORT).show();
         } else {
@@ -175,18 +191,15 @@ public class CreationFragment extends Fragment {
         }
 
         String originalPath = null;
-        if (photoFichier != null && photoFichier.exists()) {
+        if (photoUri != null && "file".equals(photoUri.getScheme())) {
+            originalPath = new File(photoUri.getPath()).getAbsolutePath();
+        } else if (photoFichier != null && photoFichier.exists()) {
             originalPath = photoFichier.getAbsolutePath();
-        } else if (photoUri != null) {
-            if ("content".equals(photoUri.getScheme())) {
-                originalPath = ImageSavingUtil.getRealPathFromUri(requireContext(), photoUri);
-            } else if ("file".equals(photoUri.getScheme())) {
-                originalPath = new File(photoUri.getPath()).getAbsolutePath();
-            }
         }
 
         ImageSavingUtil.saveProcessedImage(requireContext(), originalPath, bitmapTraite, nom, algo, parametres);
     }
+
 
     private void verifierEtPrendrePhoto() {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA)
@@ -231,5 +244,51 @@ public class CreationFragment extends Fragment {
                 Toast.makeText(getContext(), "Permission caméra refusée", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    // ------------ AJOUT MÉTHODE INFOS IMAGE --------------
+    private void afficherInfosImage(Uri uri, Bitmap bitmap) {
+        if (bitmap == null) {
+            textViewInfosImage.setText("");
+            return;
+        }
+        // Taille en pixels
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        // Taille du fichier en Ko
+        long sizeKb = -1;
+        String format = "?";
+        if (uri != null) {
+            try {
+                String scheme = uri.getScheme();
+                if ("content".equals(scheme)) {
+                    try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+                        if (cursor != null && cursor.moveToFirst()) {
+                            int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                            if (sizeIndex != -1) sizeKb = cursor.getLong(sizeIndex) / 1024;
+                            int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                            if (nameIndex != -1) {
+                                String name = cursor.getString(nameIndex);
+                                int dot = name.lastIndexOf(".");
+                                if (dot >= 0) format = name.substring(dot + 1).toUpperCase();
+                            }
+                        }
+                    }
+                } else if ("file".equals(scheme)) {
+                    File f = new File(uri.getPath());
+                    sizeKb = f.length() / 1024;
+                    String name = f.getName();
+                    int dot = name.lastIndexOf(".");
+                    if (dot >= 0) format = name.substring(dot + 1).toUpperCase();
+                }
+            } catch (Exception e) { /* ignore */ }
+        }
+
+        String infos = String.format(
+                "Format : %s\nRésolution : %d x %d px\nTaille : %s Ko",
+                format, width, height, (sizeKb >= 0 ? sizeKb : "?")
+        );
+        textViewInfosImage.setText(infos);
     }
 }

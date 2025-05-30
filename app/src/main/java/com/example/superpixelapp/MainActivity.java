@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNav;
+    private boolean isInitialIntentHandled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,16 +21,35 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottom_navigation);
 
-        // Charger le fragment par défaut
-        if (savedInstanceState == null) {
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("goto_compression", false)) {
+            String imagePath = intent.getStringExtra("image_path");
+            if (imagePath != null) {
+                // Charge CompressionFragment AVEC image
+                CompressionFragment fragment = CompressionFragment.newInstance(imagePath);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit();
+                bottomNav.setSelectedItemId(R.id.nav_comp);
+                isInitialIntentHandled = true;
+            }
+        } else if (savedInstanceState == null) {
+            // Fragment par défaut (liste)
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new ListFragment())
                     .commit();
         }
 
-        bottomNav.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment;
 
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            // Si on vient d'un intent spécial → ignore la première sélection
+            if (isInitialIntentHandled) {
+                isInitialIntentHandled = false;
+                return true;
+            }
+
+            Fragment selectedFragment;
             int itemId = item.getItemId();
             if (itemId == R.id.nav_list) {
                 selectedFragment = new ListFragment();
@@ -49,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
-
     }
 
     @Override
@@ -57,14 +76,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1 && resultCode == RESULT_OK) {
-            // Trouver le fragment et le forcer à recharger
             Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (current instanceof ListFragment) {
                 ((ListFragment) current).reload(); // 🔁 fonction à ajouter dans ListFragment
             }
         }
     }
-
-
-
 }
