@@ -84,12 +84,10 @@ public class VisuActivity extends AppCompatActivity {
 
                         @Override
                         public void onError(String message) {
-                            Toast.makeText(VisuActivity.this, "Échec du chargement de l’image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(VisuActivity.this, getString(R.string.load_failed), Toast.LENGTH_SHORT).show();
                         }
                     });
         });
-
-
     }
 
 
@@ -134,7 +132,7 @@ public class VisuActivity extends AppCompatActivity {
                     .delete(imageData);
 
             runOnUiThread(() -> {
-                Toast.makeText(this, "Image supprimée", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.delete_image_success), Toast.LENGTH_SHORT).show();
                 setResult(RESULT_OK); // 🔥
                 finish();
             });

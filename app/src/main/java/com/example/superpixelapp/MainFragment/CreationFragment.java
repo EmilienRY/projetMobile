@@ -75,11 +75,11 @@ public class CreationFragment extends Fragment {
             if (!hasFocus) {
                 String algo = choixAlgo.getText().toString().trim().toLowerCase();
                 if (algo.equals("slic")) {
-                    param1.setHint("Nombre de clusters");
-                    param2.setHint("Résolution spatiale");
+                    param1.setHint(getString(R.string.nbClusters));
+                    param2.setHint(getString(R.string.spatialRes));
                     param2.setVisibility(View.VISIBLE);
                 } else {
-                    param1.setHint("Taille minimale");
+                    param1.setHint(getString(R.string.minSize));
                     param2.setVisibility(View.GONE);
                 }
             }
@@ -177,7 +177,7 @@ public class CreationFragment extends Fragment {
             // En attente d’implémentation
             Toast.makeText(getContext(), "SLIC non encore implémenté", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(getContext(), "Algorithme inconnu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getString(R.string.UnknownAlgo), Toast.LENGTH_SHORT).show();
         }
 
         bitmapTraite = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
@@ -219,7 +219,7 @@ public class CreationFragment extends Fragment {
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 launcherCamera.launch(intent);
             } catch (IOException e) {
-                Toast.makeText(getContext(), "Erreur fichier photo", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.photoError), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -241,12 +241,11 @@ public class CreationFragment extends Fragment {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 prendrePhoto();
             } else {
-                Toast.makeText(getContext(), "Permission caméra refusée", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.camPermDenied), Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    // ------------ AJOUT MÉTHODE INFOS IMAGE --------------
     private void afficherInfosImage(Uri uri, Bitmap bitmap) {
         if (bitmap == null) {
             textViewInfosImage.setText("");
@@ -285,10 +284,14 @@ public class CreationFragment extends Fragment {
             } catch (Exception e) { /* ignore */ }
         }
 
-        String infos = String.format(
-                "Format : %s\nRésolution : %d x %d px\nTaille : %s Ko",
-                format, width, height, (sizeKb >= 0 ? sizeKb : "?")
+        String infos = getString(
+                R.string.image_info,
+                format,
+                width,
+                height,
+                (sizeKb >= 0 ? String.valueOf(sizeKb) : "?")
         );
+
         textViewInfosImage.setText(infos);
     }
 }

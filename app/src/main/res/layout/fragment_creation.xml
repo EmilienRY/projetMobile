@@ -15,7 +15,7 @@
 
         <Button
             android:id="@+id/boutonPhoto"
-            android:text="Prendre une photo  \uD83D\uDCF7"
+            android:text="@string/takePhoto"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
             android:paddingLeft="24dp"
@@ -30,7 +30,7 @@
 
         <Button
             android:id="@+id/boutonChoisir"
-            android:text="Importer une image  \u2B06\uFE0F"
+            android:text="@string/importImg"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
             android:paddingLeft="24dp"
@@ -68,7 +68,7 @@
         <!-- Algorithme -->
         <EditText
             android:id="@+id/choixAlgo"
-            android:hint="Choix de l'algorithme (e.g., watershed, slic)"
+            android:hint="@string/chooseAlgo"
             android:text="watershed"
             android:layout_marginTop="24dp"
             android:layout_width="match_parent"
@@ -77,13 +77,12 @@
         <!-- Paramètre 1 -->
         <EditText
             android:id="@+id/param1"
-            android:hint="Taille minimale"
+            android:hint="@string/minSize"
             android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number" />
 
-        <!-- Paramètre 2 (uniquement pour SLIC) -->
         <EditText
             android:id="@+id/param2"
             android:hint="Paramètre 2 (SLIC uniquement)"
@@ -96,7 +95,7 @@
         <!-- Nom de l'image -->
         <EditText
             android:id="@+id/editTextNom"
-            android:hint="Nom de l'image"
+            android:hint="@string/imgName"
             android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -104,7 +103,7 @@
         <!-- Valider -->
         <Button
             android:id="@+id/boutonValider"
-            android:text="Valider"
+            android:text="@string/Validate"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
             android:paddingLeft="24dp"

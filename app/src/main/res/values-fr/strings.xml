@@ -11,7 +11,7 @@
     <string name="load_failed">Échec du chargement de l’image</string>
     <string name="historic">Historique</string>
     <string name="creation">Creation</string>
-    <string name="compression">compression</string>
+    <string name="compression">Compression</string>
     <string name="takePhoto">Prendre une photo</string>
     <string name="importImg">Importer une image</string>
     <string name="chooseAlgo">Choix de l\'algorithme (e.g., watershed, slic)</string>

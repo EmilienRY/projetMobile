@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">SuperPixel</string>
+    <string name="name">Name</string>
+    <string name="algorithm">Algorithm</string>
+    <string name="parameters">Parameters</string>
+    <string name="compare">Compare</string>
+    <string name="compress">Compress</string>
+    <string name="delete">Delete</string>
+    <string name="save_to_gallery">Save</string>
+    <string name="delete_image_success">Image deleted</string>
+    <string name="load_failed">Failed to load image</string>
+    <string name="historic">historic</string>
+    <string name="creation">Creation</string>
+    <string name="compression">compression</string>
+    <string name="takePhoto">Take a picture</string>
+    <string name="importImg">Import an image</string>
+    <string name="chooseAlgo">    Choice of algorithm (e.g., watershed, slic)</string>
+    <string name="minSize">Minimum size</string>
+    <string name="imgName">Image Name</string>
+    <string name="Validate">Validate</string>
+    <string name="UnknownAlgo">Unknown algorithm</string>
+    <string name="photoError">Photo file error</string>
+    <string name="camPermDenied">Camera permission denied</string>
+    <string name="image_info">Format: %1$s\nResolution: %2$d x %3$d px\nSize: %4$s KB</string>
+    <string name="nbClusters">Number of clusters</string>
+    <string name="spatialRes">Spatial resolution</string>
+
+</resources>

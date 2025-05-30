@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_list"
-        android:title="Historique" />
+        android:title="@string/historic" />
     <item
         android:id="@+id/nav_crea"
-        android:title="Creation" />
+        android:title="@string/creation" />
     <item
         android:id="@+id/nav_comp"
-        android:title="Compression" />
+        android:title="@string/compression" />
 </menu>

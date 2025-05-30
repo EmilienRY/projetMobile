@@ -12,7 +12,7 @@
 
         <TextView
             android:id="@+id/nameText"
-            android:text="Nom"
+            android:text="@string/name"
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -59,7 +59,7 @@
 
             <Button
                 android:id="@+id/btnCompare"
-                android:text="Comparer"
+                android:text="@string/compare"
                 android:layout_margin="8dp"
                 android:backgroundTint="#CED8B6"
                 android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
 
             <Button
                 android:id="@+id/btnCompress"
-                android:text="Compresser"
+                android:text="@string/compress"
                 android:layout_margin="8dp"
                 android:backgroundTint="#CED8B6"
                 android:layout_width="wrap_content"
