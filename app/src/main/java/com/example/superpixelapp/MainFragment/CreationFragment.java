@@ -27,7 +27,6 @@ import androidx.fragment.app.Fragment;
 
 import com.example.superpixelapp.DataBase.DataBase;
 import com.example.superpixelapp.DataBase.SuperPixelImage;
-import com.example.superpixelapp.MainActivity;
 import com.example.superpixelapp.R;
 import com.example.superpixelapp.utils.ImageSavingUtil;
 
@@ -41,13 +40,14 @@ import java.util.concurrent.Executors;
 public class CreationFragment extends Fragment {
     private ImageView imageView;
     private Button boutonPhoto, boutonChoisir, boutonValider, boutonCompression;
-    private EditText editTextNom, choixAlgo, param1, param2;
+    private EditText editTextNom, param1, param2;
+    private Spinner choixAlgo;
     private Bitmap bitmapSelectionne, bitmapTraite;
     private Uri photoUri;
     private File photoFichier;
 
     private SuperPixelImage imageData;
-    private TextView textViewInfosImage; // AJOUT
+    private TextView textViewInfosImage;
     private ActivityResultLauncher<Intent> launcherGalerie, launcherCamera;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
 
@@ -56,6 +56,8 @@ public class CreationFragment extends Fragment {
     }
 
     public native void traiterImageWatershed(int[] pixels, int width, int height, int minSize);
+
+    public native void traiterImageSLIC(int[] pixels, int width, int height, int nSuperpixels, float compactness);
 
     @Nullable
     @Override
@@ -69,29 +71,41 @@ public class CreationFragment extends Fragment {
         boutonValider = vue.findViewById(R.id.boutonValider);
         boutonCompression = vue.findViewById(R.id.boutonCompression);
         editTextNom = vue.findViewById(R.id.editTextNom);
-        choixAlgo = vue.findViewById(R.id.choixAlgo);
         param1 = vue.findViewById(R.id.param1);
         param2 = vue.findViewById(R.id.param2);
+        choixAlgo = vue.findViewById(R.id.choixAlgo);
 
-        textViewInfosImage = vue.findViewById(R.id.textViewInfosImage); // AJOUT
+        textViewInfosImage = vue.findViewById(R.id.textViewInfosImage);
 
         boutonValider.setEnabled(false);
         boutonCompression.setEnabled(false);
         param2.setVisibility(View.GONE);
 
-        // Adaptation des champs selon algo
-        choixAlgo.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                String algo = choixAlgo.getText().toString().trim().toLowerCase();
-                if (algo.equals("slic")) {
+        // Spinner d'algo : affiche les paramètres adaptés à l'algo
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.algo_options,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        choixAlgo.setAdapter(adapter);
+
+        choixAlgo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String algo = (String) parent.getItemAtPosition(position);
+                if (algo.equalsIgnoreCase("SLIC")) {
                     param1.setHint(getString(R.string.nbClusters));
                     param2.setHint(getString(R.string.spatialRes));
                     param2.setVisibility(View.VISIBLE);
-                } else {
+                } else { // Watershed par défaut
                     param1.setHint(getString(R.string.minSize));
                     param2.setVisibility(View.GONE);
                 }
             }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         // Choix caméra
@@ -104,7 +118,7 @@ public class CreationFragment extends Fragment {
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
                             imageView.setBackgroundColor(Color.TRANSPARENT);
-                            afficherInfosImage(photoUri, bitmapSelectionne); // AJOUT
+                            afficherInfosImage(photoUri, bitmapSelectionne);
                             boutonValider.setEnabled(true);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -119,7 +133,6 @@ public class CreationFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                         photoUri = result.getData().getData();
                         try {
-                            // Copie l'image dans le dossier interne de l'app
                             String fileName = "import_" + System.currentTimeMillis() + ".jpg";
                             String appPath = ImageSavingUtil.copyToAppInternal(requireContext(), photoUri, fileName);
                             Bitmap bitmap = BitmapFactory.decodeFile(appPath);
@@ -127,10 +140,9 @@ public class CreationFragment extends Fragment {
                             bitmapSelectionne = adapterTaille(bitmap);
                             imageView.setImageBitmap(bitmapSelectionne);
                             imageView.setBackgroundColor(Color.TRANSPARENT);
-                            afficherInfosImage(Uri.fromFile(new File(appPath)), bitmapSelectionne); // Utilise Uri du fichier copié
+                            afficherInfosImage(Uri.fromFile(new File(appPath)), bitmapSelectionne);
                             boutonValider.setEnabled(true);
 
-                            // Met à jour photoUri pour pointer vers le fichier local (pour sauvegarder en BDD)
                             photoUri = Uri.fromFile(new File(appPath));
 
                         } catch (IOException e) {
@@ -138,7 +150,6 @@ public class CreationFragment extends Fragment {
                         }
                     }
                 });
-
 
         boutonPhoto.setOnClickListener(view -> verifierEtPrendrePhoto());
         boutonChoisir.setOnClickListener(view -> ouvrirGalerie());
@@ -168,8 +179,6 @@ public class CreationFragment extends Fragment {
             }
         });
 
-
-
         return vue;
     }
 
@@ -193,12 +202,12 @@ public class CreationFragment extends Fragment {
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
-        String algo = choixAlgo.getText().toString().trim().toLowerCase();
+        String algo = (String) choixAlgo.getSelectedItem();
         String nom = editTextNom.getText().toString().trim();
         String param1Text = param1.getText().toString().trim();
         String param2Text = param2.getText().toString().trim();
 
-        if (algo.equals("watershed")) {
+        if (algo.equalsIgnoreCase("Watershed")) {
             int minSize = Integer.parseInt(param1Text);
             traiterImageWatershed(pixels, width, height, minSize);
             bitmapTraite = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
@@ -206,9 +215,14 @@ public class CreationFragment extends Fragment {
             imageView.setBackgroundColor(Color.TRANSPARENT);
             sauvegarderImage(nom, "Watershed", "minSize=" + minSize);
         }
-        else if (algo.equals("slic")) {
-            // En attente d’implémentation
-            Toast.makeText(getContext(), "SLIC non encore implémenté", Toast.LENGTH_SHORT).show();
+        else if (algo.equalsIgnoreCase("SLIC")) {
+            int nClusters = Integer.parseInt(param1Text);
+            float compactness = Float.parseFloat(param2Text);
+            traiterImageSLIC(pixels, width, height, nClusters, compactness);
+            bitmapTraite = Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888);
+            imageView.setImageBitmap(bitmapTraite);
+            imageView.setBackgroundColor(Color.TRANSPARENT);
+            sauvegarderImage(nom, "SLIC", "nClusters=" + nClusters + ", m=" + compactness);
         } else {
             Toast.makeText(getContext(), getString(R.string.UnknownAlgo), Toast.LENGTH_SHORT).show();
         }
@@ -231,22 +245,20 @@ public class CreationFragment extends Fragment {
             originalPath = photoFichier.getAbsolutePath();
         }
 
-        // Sauvegarde l'image traitée
         ImageSavingUtil.saveProcessedImage(requireContext(), originalPath, bitmapTraite, nom, algo, parametres);
 
-        boutonCompression.setEnabled(false); // désactivé par défaut
+        boutonCompression.setEnabled(false);
 
         String finalNom = nom;
         Executors.newSingleThreadExecutor().execute(() -> {
-            // Attend que l'image soit bien enregistrée
             SuperPixelImage img = null;
-            for (int i = 0; i < 10; i++) { // Essaie jusqu'à 10 fois (max ~1 sec)
+            for (int i = 0; i < 10; i++) {
                 img = DataBase.getInstance(requireContext())
                         .superPixelImageDao()
                         .getImageByNom(finalNom);
                 if (img != null) break;
                 try {
-                    Thread.sleep(100); // petite pause entre essais
+                    Thread.sleep(100);
                 } catch (InterruptedException ignored) {}
             }
 
@@ -254,15 +266,13 @@ public class CreationFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 if (finalImg != null) {
                     imageData = finalImg;
-                    boutonCompression.setEnabled(true); // actif seulement si tout est prêt
+                    boutonCompression.setEnabled(true);
                 } else {
                     Toast.makeText(getContext(), "Erreur lors de l'enregistrement en base", Toast.LENGTH_SHORT).show();
                 }
             });
         });
     }
-
-
 
     private void verifierEtPrendrePhoto() {
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA)
@@ -314,11 +324,8 @@ public class CreationFragment extends Fragment {
             textViewInfosImage.setText("");
             return;
         }
-        // Taille en pixels
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-
-        // Taille du fichier en Ko
         long sizeKb = -1;
         String format = "?";
         if (uri != null) {

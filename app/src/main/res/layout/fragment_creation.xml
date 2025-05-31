@@ -11,8 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-
-
         <Button
             android:id="@+id/boutonPhoto"
             android:text="@string/takePhoto"
@@ -64,15 +62,12 @@
             android:text=""
             android:background="@android:color/transparent" />
 
-
-        <!-- Algorithme -->
-        <EditText
+        <!-- Spinner à la place du choix d'algo -->
+        <Spinner
             android:id="@+id/choixAlgo"
-            android:hint="@string/chooseAlgo"
-            android:text="watershed"
-            android:layout_marginTop="24dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"/>
 
         <!-- Paramètre 1 -->
         <EditText
