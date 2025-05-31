@@ -2,6 +2,8 @@ package com.example.superpixelapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -66,11 +68,22 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (selectedFragment != null) {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+                if (currentFragment instanceof CompressionFragment) {
+                    CompressionFragment cf = (CompressionFragment) currentFragment;
+                    if (cf.isCompressionEnCours()) {
+                        Toast.makeText(this, "Veuillez attendre la fin de la compression", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                }
+
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
                 return true;
             }
+
             return false;
         });
     }

@@ -83,7 +83,7 @@
 
         <Button
             android:id="@+id/boutonDownload"
-            android:text="@string/download"
+            android:text="@string/downloadColorMap"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
             android:paddingLeft="24dp"

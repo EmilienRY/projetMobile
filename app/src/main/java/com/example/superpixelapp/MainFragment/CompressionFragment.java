@@ -35,12 +35,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.example.superpixelapp.R;
 import com.example.superpixelapp.worker.CompressionWorker;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class CompressionFragment extends Fragment {
     private ImageView imageViewCarte, imageViewComp;
@@ -166,7 +170,7 @@ public class CompressionFragment extends Fragment {
             return;
         }
 
-        String jsonPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/palette.json";
+        String jsonPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/palette" + getTimestampForFilename() + ".json";
         Uri fileUri = Uri.fromFile(file);
 
         Data inputData = new Data.Builder()
@@ -184,6 +188,7 @@ public class CompressionFragment extends Fragment {
         boutonChoisir.setEnabled(false);
 
         WorkManager.getInstance(requireContext()).enqueue(workRequest);
+        setCompressionEnCours(true);
 
         // Observe l'état du Worker pour afficher l'image une fois terminée
         WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(workRequest.getId())
@@ -202,6 +207,7 @@ public class CompressionFragment extends Fragment {
                                 progressBar.setVisibility(View.GONE);
                                 boutonValider.setEnabled(true);
                                 boutonChoisir.setEnabled(true);
+                                setCompressionEnCours(false);
 
                                 if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
                                     String outputPath = workInfo.getOutputData().getString("output_image_path");
@@ -227,7 +233,7 @@ public class CompressionFragment extends Fragment {
     public void saveBitmapToFile(Bitmap bitmap, Context context) {
         String filename = "image_traitee_" + System.currentTimeMillis() + ".png";
         File directory = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "ImageTraitementApp");
+                Environment.DIRECTORY_PICTURES), "SuperPixelApp");
 
         if (!directory.exists()) {
             directory.mkdirs();
@@ -248,6 +254,19 @@ public class CompressionFragment extends Fragment {
         }
     }
 
+    public String getTimestampForFilename() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
+        return dateFormat.format(new Date());
+    }
+    private boolean compressionEnCours = false;
+
+    public boolean isCompressionEnCours() {
+        return compressionEnCours;
+    }
+
+    private void setCompressionEnCours(boolean enCours) {
+        this.compressionEnCours = enCours;
+    }
 
 
 }

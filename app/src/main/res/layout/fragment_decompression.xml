@@ -65,5 +65,20 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
 
+        <Button
+            android:id="@+id/boutonDownload"
+            android:text="@string/downloadImgDecomp"
+            android:background="@drawable/rounded_button"
+            android:textColor="#222222"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:layout_marginTop="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
     </LinearLayout>
 </ScrollView>

@@ -1,12 +1,15 @@
 package com.example.superpixelapp.MainFragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,6 +35,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -41,7 +45,7 @@ import java.util.List;
 public class DecompressionFragment extends Fragment {
 
     private ImageView imageView;
-    private Button btnImportJson, btnValider, btmImportImg;
+    private Button btnImportJson, btnValider, btmImportImg, btnDownload;
     private Bitmap bitmapImgDecomp, bitmapSelectionne;
     private Uri photoUri;
     private ActivityResultLauncher<Intent> jsonFileLauncher;
@@ -64,7 +68,7 @@ public class DecompressionFragment extends Fragment {
         btnImportJson = vue.findViewById(R.id.btnImportJson);
         btnValider = vue.findViewById(R.id.boutonValider);
         btmImportImg = vue.findViewById(R.id.btnImportMap);
-
+        btnDownload = vue.findViewById(R.id.boutonDownload);
 
         btnValider.setEnabled(false);
 
@@ -118,6 +122,8 @@ public class DecompressionFragment extends Fragment {
                 imageView.setImageBitmap(bitmapImgDecomp);
             }
         });
+
+        btnDownload.setOnClickListener(view -> saveBitmapToFile(bitmapImgDecomp,requireContext()));
 
         return vue;
     }
@@ -192,5 +198,29 @@ public class DecompressionFragment extends Fragment {
     private void ouvrirGalerie() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         launcherGalerie.launch(intent);
+    }
+
+    public void saveBitmapToFile(Bitmap bitmap, Context context) {
+        String filename = "image_traitee_" + System.currentTimeMillis() + ".png";
+        File directory = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "SuperPixelApp");
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        File file = new File(directory, filename);
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+
+            // Rendre visible dans la galerie
+            MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null, null);
+
+            Toast.makeText(context, "Image sauvegardée dans la galerie", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Erreur de sauvegarde", Toast.LENGTH_SHORT).show();
+        }
     }
 }

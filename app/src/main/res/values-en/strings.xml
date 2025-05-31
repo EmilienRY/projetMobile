@@ -27,7 +27,8 @@
     <string name="ColorsMap"> Colors map </string>
     <string name="decomp"> Decompression </string>
     <string name="importJson"> Import a JSON file </string>
-    <string name="download"> Download colors map </string>
+    <string name="downloadColorMap"> Download colors map </string>
+    <string name="downloadImgDecomp"> Download decompress image </string>
     <string-array name="algo_options"><item>Watershed</item><item>SLIC</item></string-array>
     <string name="image_infos">Resolution: %1$d x %2$d px\nSize: %3$s KB</string>
 
