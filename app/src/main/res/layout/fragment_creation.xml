@@ -62,14 +62,12 @@
             android:text=""
             android:background="@android:color/transparent" />
 
-        <!-- Spinner à la place du choix d'algo -->
         <Spinner
             android:id="@+id/choixAlgo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"/>
 
-        <!-- Paramètre 1 -->
         <EditText
             android:id="@+id/param1"
             android:hint="@string/minSize"
@@ -87,7 +85,6 @@
             android:visibility="gone"
             android:inputType="number" />
 
-        <!-- Nom de l'image -->
         <EditText
             android:id="@+id/editTextNom"
             android:hint="@string/imgName"
@@ -95,7 +92,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <!-- Valider -->
         <Button
             android:id="@+id/boutonValider"
             android:text="@string/Validate"

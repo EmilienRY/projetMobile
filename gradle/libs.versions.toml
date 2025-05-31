@@ -13,6 +13,7 @@ photoviewVersion = "1.0.3"
 roomCommonJvm = "2.7.1"
 roomRuntimeAndroid = "2.7.1"
 workRuntime = "2.10.1"
+zoomlayout = "1.9.0"
 
 [libraries]
 beforeafter = { module = "com.github.florent37:beforeafter", version.ref = "beforeafter" }
@@ -31,6 +32,7 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCom
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomCommonJvm" }
 room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
+zoomlayout = { module = "com.otaliastudios:zoomlayout", version.ref = "zoomlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

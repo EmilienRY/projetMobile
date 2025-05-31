@@ -48,8 +48,7 @@ android {
 android.sourceSets["main"].jniLibs.srcDirs("src/main/jniLibs")
 
 dependencies {
-    // ----------- LIBS ESSENTIELLES -----------
-
+    implementation(libs.zoomlayout)
     implementation(libs.core.ktx)
     implementation(libs.core)
     implementation(libs.room.runtime)
@@ -61,7 +60,6 @@ dependencies {
     implementation(libs.room.common.jvm)
     implementation(libs.room.runtime.android)
 
-    // ---------- TESTS ----------
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
