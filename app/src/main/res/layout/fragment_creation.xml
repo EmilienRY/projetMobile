@@ -11,8 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-
-
         <Button
             android:id="@+id/boutonPhoto"
             android:text="@string/takePhoto"
@@ -64,17 +62,12 @@
             android:text=""
             android:background="@android:color/transparent" />
 
-
-        <!-- Algorithme -->
-        <EditText
+        <Spinner
             android:id="@+id/choixAlgo"
-            android:hint="@string/chooseAlgo"
-            android:text="watershed"
-            android:layout_marginTop="24dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"/>
 
-        <!-- Paramètre 1 -->
         <EditText
             android:id="@+id/param1"
             android:hint="@string/minSize"
@@ -92,7 +85,6 @@
             android:visibility="gone"
             android:inputType="number" />
 
-        <!-- Nom de l'image -->
         <EditText
             android:id="@+id/editTextNom"
             android:hint="@string/imgName"
@@ -100,7 +92,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <!-- Valider -->
         <Button
             android:id="@+id/boutonValider"
             android:text="@string/Validate"

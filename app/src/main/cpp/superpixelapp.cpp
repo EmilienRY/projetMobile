@@ -94,7 +94,6 @@ void filtreGaussien(const std::vector<float> &in, std::vector<float> &out, int w
         for (int j = 0; j < ksize; ++j)
             kernel[i][j] /= somme;
 
-    // Convolution
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             float sum = 0, wsum = 0;
@@ -144,7 +143,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
     std::vector<uint8_t> gradient(width * height);   // Gradient final
     std::vector<std::vector<int>> labels(height, std::vector<int>(width, -1));
 
-    // ARGB -> RGB + Grayscale
     for (int i = 0; i < width * height; i++) {
         int pixel = pixels[i];
         int r = (pixel >> 16) & 0xff;
@@ -154,17 +152,14 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
         grey[i] = 0.3f * r + 0.59f * g + 0.11f * b;
     }
 
-    // Flou gaussien sur grey
-    int rayonGaussien = 1; // ou paramétrable
+    int rayonGaussien = 1;
     filtreGaussien(grey, greyFlou, width, height, rayonGaussien);
 
-    // Gradient Sobel sur greyFlou
     gradientSobel(greyFlou, gradient, width, height);
 
-    // Détection des marqueurs (minima locaux, smooth groupé)
     std::vector<Vec2> markers;
     std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
-    int threshold = 1; // correspond à ta version de base
+    int threshold = 1;
     for (int y = 1; y < height - 1; y++) {
         for (int x = 1; x < width - 1; x++) {
             if (visited[y][x]) continue;
@@ -196,7 +191,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
         }
     }
 
-    // Watershed
     std::queue<Vec2> q;
     for (int i = 0; i < markers.size(); ++i) {
         int x = markers[i].x, y = markers[i].y;
@@ -218,7 +212,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
         }
     }
 
-    // Superpixels, couleurs moyennes
     std::vector<SuperPixel> superPixels(markers.size());
     std::vector<int> sizes(markers.size(), 0);
     for (int y = 0; y < height; y++)
@@ -234,13 +227,11 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
         if (sizes[i] > 0)
             superPixels[i].meanColor = superPixels[i].meanColor / sizes[i];
 
-    // --- Fusion des superpixels trop petits ---
     bool fusionActive = true;
     while (fusionActive) {
         fusionActive = false;
         for (int i = 0; i < superPixels.size(); i++) {
             if (sizes[i] > 0 && sizes[i] < minSize) {
-                // Cherche le voisin le plus proche en couleur
                 std::map<int, float> voisinDist;
                 for (auto& p : superPixels[i].pixels) {
                     for (auto& d : dirs) {
@@ -276,7 +267,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
             }
         }
     }
-    // Recalcule la couleur moyenne finale
     for (int i = 0; i < superPixels.size(); i++)
         if (sizes[i] > 0) {
             Vec3 colorSum(0, 0, 0);
@@ -285,7 +275,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
             superPixels[i].meanColor = colorSum / sizes[i];
         }
 
-    // Génération du résultat
     for (int y = 0; y < height; y++)
         for (int x = 0; x < width; x++) {
             int label = labels[y][x];
@@ -322,7 +311,6 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
     int taille = width * height;
     LOGD("Appel de CompressionPallette OK");
 
-    // Initialisation des centroïdes
     const int k = 256;
     std::vector<std::vector<int>> centroids(k, std::vector<int>(3));
     for (int i = 0; i < k; ++i) {
@@ -337,12 +325,10 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
     int iteration=0;
 
     while (!converged and iteration<10) {
-        // Réinitialiser les clusters
         for (auto& cluster : clusters) {
             cluster.clear();
         }
 
-        // Attribution des pixels aux clusters
         for (int i = 0; i < taille; ++i) {
             jint pixel = tabPixels[i];
             int r = (pixel >> 16) & 0xff;
@@ -368,7 +354,6 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
             clusters[indexMin].push_back({r, g, b});
         }
 
-        // Calcul des nouveaux centroïdes
         for (int i = 0; i < k; ++i) {
             newCentroids[i][0] = 0;
             newCentroids[i][1] = 0;
@@ -401,7 +386,6 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
     }
     LOGD("Convergence Atteinte");
 
-    // Application des centroïdes aux pixels
 
     std::vector<jint> clusterGrayMap(taille);
 
@@ -432,14 +416,12 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
         int newB = centroids[indexMin][2];
         tabPixels[i] = (a << 24) | (newR << 16) | (newG << 8) | newB;
 
-        // Génération de la carte des clusters en niveau de gris
-        int gray = indexMin; // ∈ [0,255]
+        int gray = indexMin;
         clusterGrayMap[i] = (0xFF << 24) | (gray << 16) | (gray << 8) | gray;
     }
 
     env->ReleaseIntArrayElements(pixels, tabPixels, 0);
 
-    // Convertir clusterMap en jintArray
     jintArray grayArray = env->NewIntArray(taille);
     env->SetIntArrayRegion(grayArray, 0, taille, clusterGrayMap.data());
 
@@ -455,3 +437,135 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
 
 }
 
+
+
+Vec3 RGBtoLAB(const Vec3& color) {
+
+    float r = color.r / 255.f;
+    float g = color.g / 255.f;
+    float b = color.b / 255.f;
+
+    float X = 0.4124f * r + 0.3576f * g + 0.1805f * b;
+    float Y = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+    float Z = 0.0193f * r + 0.1192f * g + 0.9505f * b;
+
+    auto f = [](float t) { return (t > 0.008856f) ? std::cbrtf(t) : (7.787f * t + 16.f / 116.f); };
+    float fx = f(X / 0.95047f);
+    float fy = f(Y / 1.00000f);
+    float fz = f(Z / 1.08883f);
+
+    float L = 116.f * fy - 16.f;
+    float a = 500.f * (fx - fy);
+    float b2 = 200.f * (fy - fz);
+    return Vec3(L, a, b2);
+}
+
+
+Vec3 LABtoRGB(const Vec3& lab) {
+    // 1. LAB → XYZ
+    float y = (lab.r + 16.f) / 116.f;
+    float x = lab.g / 500.f + y;
+    float z = y - lab.b / 200.f;
+
+    x = 0.95047f * (x * x * x);
+    y = 1.00000f * (y * y * y);
+    z = 1.08883f * (z * z * z);
+
+    float r = x * 3.2406f + y * -1.5372f + z * -0.4986f;
+    float g = x * -0.9689f + y * 1.8758f + z * 0.0415f;
+    float b = x * 0.0557f + y * -0.2040f + z * 1.0570f;
+
+    auto clamp = [](float v) { return std::max(0, std::min(255, int(v * 255.f))); };
+    return Vec3(clamp(r), clamp(g), clamp(b));
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageSLIC(
+        JNIEnv* env, jobject thiz,
+        jintArray pixels_, jint width, jint height,
+        jint nSuperpixels, jfloat compactness)
+{
+    jint* pixels = env->GetIntArrayElements(pixels_, nullptr);
+    if (!pixels) return;
+
+    int S = std::sqrt((width * height) / nSuperpixels);
+    int nIter = 10;
+
+    std::vector<Vec3> imgLAB(width * height);
+    for (int i = 0; i < width * height; ++i) {
+        int pixel = pixels[i];
+        int r = (pixel >> 16) & 0xff;
+        int g = (pixel >> 8) & 0xff;
+        int b = pixel & 0xff;
+        imgLAB[i] = RGBtoLAB(Vec3(r, g, b));
+    }
+
+    // 2. Initialisation centres
+    struct Center { Vec2 pos; Vec3 color; };
+    std::vector<Center> centers;
+    for (int y = S/2; y < height; y += S) {
+        for (int x = S/2; x < width; x += S) {
+            int idx = y * width + x;
+            centers.push_back({Vec2(x, y), imgLAB[idx]});
+        }
+    }
+    int K = centers.size();
+
+    std::vector<int> labels(width * height, -1);
+    std::vector<float> distances(width * height, 1e10f);
+
+    for (int iter = 0; iter < nIter; ++iter) {
+        std::fill(distances.begin(), distances.end(), 1e10f);
+        for (int k = 0; k < K; ++k) {
+            Vec2 c = centers[k].pos;
+            Vec3 clab = centers[k].color;
+            for (int dy = -S; dy <= S; ++dy) {
+                int yy = c.y + dy;
+                if (yy < 0 || yy >= height) continue;
+                for (int dx = -S; dx <= S; ++dx) {
+                    int xx = c.x + dx;
+                    if (xx < 0 || xx >= width) continue;
+                    int idx = yy * width + xx;
+                    Vec3 lab = imgLAB[idx];
+                    float dc = (lab - clab).norm();
+                    float ds = std::sqrt(float(dx * dx + dy * dy));
+                    float D = dc + (compactness / S) * ds;
+                    if (D < distances[idx]) {
+                        distances[idx] = D;
+                        labels[idx] = k;
+                    }
+                }
+            }
+        }
+        std::vector<Vec2> sumXY(K, Vec2(0, 0));
+        std::vector<Vec3> sumLAB(K, Vec3(0, 0, 0));
+        std::vector<int> count(K, 0);
+        for (int i = 0; i < width * height; ++i) {
+            int k = labels[i];
+            if (k < 0) continue;
+            int x = i % width, y = i / width;
+            sumXY[k].x += x;
+            sumXY[k].y += y;
+            sumLAB[k] += imgLAB[i];
+            count[k]++;
+        }
+        for (int k = 0; k < K; ++k) {
+            if (count[k] > 0) {
+                centers[k].pos = Vec2(sumXY[k].x / count[k], sumXY[k].y / count[k]);
+                centers[k].color = sumLAB[k] / float(count[k]);
+            }
+        }
+    }
+
+    for (int i = 0; i < width * height; ++i) {
+        int k = labels[i];
+        Vec3 lab = centers[k].color;
+        Vec3 rgb = LABtoRGB(lab);
+        pixels[i] = (0xFF << 24) | (int(rgb.r) << 16) | (int(rgb.g) << 8) | int(rgb.b);
+    }
+
+    env->ReleaseIntArrayElements(pixels_, pixels, 0);
+}

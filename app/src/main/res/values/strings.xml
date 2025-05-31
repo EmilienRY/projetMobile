@@ -25,5 +25,6 @@
     <string name="nbClusters">Nombre de clusters</string>
     <string name="spatialRes">Résolution spatiale</string>
     <string name="ColorsMap"> Carte des couleurs </string>
+    <string-array name="algo_options"><item>Watershed</item><item>SLIC</item></string-array>
 
 </resources>

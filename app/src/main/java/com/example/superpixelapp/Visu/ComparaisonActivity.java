@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,4 +68,9 @@ public class ComparaisonActivity extends AppCompatActivity {
             ));
         });
     }
+
+    public void onBackPressed(View view) {
+        finish();
+    }
+
 }
