@@ -26,5 +26,6 @@
     <string name="spatialRes">Résolution spatiale</string>
     <string name="ColorsMap"> Carte des couleurs </string>
     <string-array name="algo_options"><item>Watershed</item><item>SLIC</item></string-array>
+    <string name="image_infos">Résolution : %1$d x %2$d px\nTaille : %3$s Ko</string>
 
 </resources>

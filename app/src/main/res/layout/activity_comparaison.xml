@@ -1,67 +1,96 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#FFFBEF"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <!-- Zone image centrale qui prend tout l'espace dispo -->
-    <com.otaliastudios.zoom.ZoomLayout
-        android:id="@+id/zoomLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        app:zoomEnabled="true"
-        app:overPinchable="true"
-        app:transformation="centerInside">
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/imageOriginale"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter" />
-
-            <ImageView
-                android:id="@+id/imageTraitee"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter" />
-        </FrameLayout>
-    </com.otaliastudios.zoom.ZoomLayout>
-
-    <!-- Slider de comparaison -->
-    <com.google.android.material.slider.Slider
-        android:id="@+id/slider"
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:valueFrom="0"
-        android:valueTo="100"
-        android:value="50"
-        android:stepSize="1"
-        android:layout_marginTop="8dp" />
+        android:padding="16dp">
 
-    <!-- Placeholder pour la courbe -->
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/placeholder_graph" />
+        <com.otaliastudios.zoom.ZoomLayout
+            android:id="@+id/zoomLayout"
+            android:layout_width="match_parent"
+            android:layout_height="600dp"
+            android:layout_marginTop="32dp"
+            app:zoomEnabled="true"
+            app:overPinchable="true"
+            app:transformation="centerInside">
 
-    <!-- Bouton Retour -->
-    <ImageButton
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="24dp"
-        android:src="@drawable/ic_arrow_back"
-        android:backgroundTint="#D4A373"
-        android:background="@drawable/rounded_button"
-        android:onClick="onBackPressed"/>
-</LinearLayout>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/imageOriginale"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
+
+                <ImageView
+                    android:id="@+id/imageTraitee"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
+            </FrameLayout>
+        </com.otaliastudios.zoom.ZoomLayout>
+
+
+        <!-- Slider de comparaison -->
+        <com.google.android.material.slider.Slider
+            android:id="@+id/slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="100"
+            android:value="50"
+            android:stepSize="1"
+            android:layout_marginTop="8dp" />
+
+        <ProgressBar
+            android:id="@+id/progressPsnr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            style="?android:attr/progressBarStyleLarge"
+            android:visibility="gone"/>
+
+
+
+        <LinearLayout
+            android:id="@+id/psnrTab"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:background="#FAEFD9"
+            android:padding="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="4dp"
+            android:layout_gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/textPsnr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PSNR :"
+                android:textSize="16sp"
+                android:textColor="#68491C"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <!-- Bouton Retour -->
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:src="@drawable/ic_arrow_back"
+            android:backgroundTint="#D4A373"
+            android:background="@drawable/rounded_button"
+            android:onClick="onBackPressed"/>
+    </LinearLayout>
+</ScrollView>

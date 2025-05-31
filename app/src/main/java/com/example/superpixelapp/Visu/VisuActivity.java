@@ -29,6 +29,7 @@ public class VisuActivity extends AppCompatActivity {
     private int imageId;
     private SuperPixelImage imageData;
     private ImageButton btnSaveToGallery;
+    private TextView imageInfos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +40,7 @@ public class VisuActivity extends AppCompatActivity {
         nameText = findViewById(R.id.nameText);
         algoText = findViewById(R.id.algoText);
         paramText = findViewById(R.id.paramText);
+        imageInfos = findViewById(R.id.imageInfos);
 
         btnDelete = findViewById(R.id.btnDelete);
         btnCompare = findViewById(R.id.btnCompare);
@@ -114,13 +116,29 @@ public class VisuActivity extends AppCompatActivity {
                             @Override
                             public void onImageLoaded(Bitmap bitmap) {
                                 imageView.setImageBitmap(bitmap);
+                                // Affichage des infos (dimensions + taille en Ko)
+                                String filePath = imageData.processedImagePath;
+                                java.io.File file = new java.io.File(filePath);
+                                long sizeBytes = file.exists() ? file.length() : -1;
+                                double sizeKo = (sizeBytes >= 0) ? sizeBytes / 1024.0 : -1;
+
+                                int width = bitmap.getWidth();
+                                int height = bitmap.getHeight();
+                                String infos = getString(
+                                        R.string.image_infos,
+                                        width, height, (sizeKo >= 0 ? String.format("%.1f", sizeKo) : "?")
+                                );
+                                imageInfos.setText(infos);
+
                             }
 
                             @Override
                             public void onError(String message) {
                                 imageView.setImageResource(R.drawable.ic_error);
+                                imageInfos.setText("-");
                             }
                         });
+
             });
         });
     }
@@ -133,10 +151,14 @@ public class VisuActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
                 Toast.makeText(this, getString(R.string.delete_image_success), Toast.LENGTH_SHORT).show();
-                setResult(RESULT_OK); // 🔥
+                setResult(RESULT_OK);
                 finish();
             });
         });
     }
 
+
+    public void onBackPressed(View view) {
+        finish();
+    }
 }
