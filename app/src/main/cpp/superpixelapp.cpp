@@ -6,10 +6,52 @@
 #include <limits>
 #include <map>
 #include <sstream>
+#include <iostream>
+#include "json.hpp"
+#include <stdio.h>
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <unordered_set>
+#include <random>
 
+using json = nlohmann::json;
 
 #define LOG_TAG "SUPERPIXEL_NATIVE"
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+
+void savePaletteToJson(const std::vector<std::vector<int>> &palette, const std::string &filename) {
+    json j = json::array();
+    for (int i = 0; i < palette.size(); ++i) {
+        json color;
+        color["id"] = i;
+        color["rgb"] = palette[i];
+        j.push_back(color);
+    }
+
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        file << j.dump(4);
+        file.close();
+    } else {
+        LOGD("Erreur lors de l'ouverture du fichier JSON");
+    }
+}
+
+
+std::vector<std::vector<double>> loadPaletteFromJson(const std::string &filename) {
+    std::ifstream file(filename);
+    json j;
+    file >> j;
+    file.close();
+
+    std::vector<std::vector<double>> palette;
+    for (const auto &value : j) {
+        palette.push_back({value[0], value[1], value[2]});
+    }
+    return palette;
+}
 
 struct Vec2 { int x, y; Vec2(int _x, int _y) : x(_x), y(_y) {} };
 struct Vec3 {
@@ -274,7 +316,7 @@ bool testConvergence(const std::vector<std::vector<int>>& oldCentroids, const st
 
 extern "C" JNIEXPORT jintArray  JNICALL
 Java_com_example_superpixelapp_worker_CompressionWorker_compression(
-        JNIEnv* env, jobject /* this */, jintArray pixels, jint width, jint height) {
+        JNIEnv* env, jobject /* this */, jintArray pixels, jint width, jint height, jstring path) {
 
     jint* tabPixels = env->GetIntArrayElements(pixels, nullptr);
     int taille = width * height;
@@ -402,6 +444,12 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
     env->SetIntArrayRegion(grayArray, 0, taille, clusterGrayMap.data());
 
     LOGD("Compression Pallette Terminée");
+
+    const char* pathCStr = env->GetStringUTFChars(path, nullptr);
+    std::string jsonFilePath(pathCStr);
+    env->ReleaseStringUTFChars(path, pathCStr);
+
+    savePaletteToJson(centroids, jsonFilePath);
 
     return grayArray;
 

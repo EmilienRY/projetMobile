@@ -30,7 +30,7 @@ public class CompressionWorker extends Worker {
     static {
         System.loadLibrary("superpixel");
     }
-    public native int[] compression(int[] pixels, int width, int height);
+    public native int[] compression(int[] pixels, int width, int height, String path);
 
     public CompressionWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -53,9 +53,11 @@ public class CompressionWorker extends Worker {
             int height = bitmap.getHeight();
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+            String jsonOutputPath = getInputData().getString("json_output_path");
 
             // Traitement C++ !
-            int[] clusterMap = compression(pixels, width, height);
+
+            int[] clusterMap = compression(pixels, width, height, jsonOutputPath);
 
             // Sauvegarde clusterMap dans un fichier temporaire PNG
             Bitmap outputBitmap = Bitmap.createBitmap(clusterMap, width, height, Bitmap.Config.ARGB_8888);

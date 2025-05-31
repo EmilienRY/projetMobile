@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.*;
 import android.net.Uri;
@@ -160,10 +161,12 @@ public class CompressionFragment extends Fragment {
             return;
         }
 
+        String jsonPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/palette.json";
         Uri fileUri = Uri.fromFile(file);
 
         Data inputData = new Data.Builder()
                 .putString("image_uri", fileUri.toString())
+                .putString("json_output_path", jsonPath)
                 .build();
 
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(CompressionWorker.class)
