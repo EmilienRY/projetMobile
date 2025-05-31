@@ -12,7 +12,22 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/boutonChoisir"
+            android:id="@+id/btnImportJson"
+            android:text="@string/importJson"
+            android:background="@drawable/rounded_button"
+            android:textColor="#222222"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="16sp"
+            android:layout_marginTop="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/btnImportMap"
             android:text="@string/importImg"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
@@ -27,7 +42,7 @@
             android:layout_gravity="center"/>
 
         <ImageView
-            android:id="@+id/imageViewComp"
+            android:id="@+id/imageView"
             android:layout_width="250dp"
             android:layout_height="250dp"
             android:layout_marginTop="16dp"
@@ -35,55 +50,9 @@
             android:adjustViewBounds="true"
             android:background="#CCCCCC" />
 
-        <TextView
-            android:id="@+id/textViewInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#222222"
-            android:textSize="16sp"
-            android:gravity="center_horizontal"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="5dp"
-            android:text="@string/ColorsMap"
-            android:background="@android:color/transparent" />
-
-        <ImageView
-            android:id="@+id/imageViewCarte"
-            android:layout_width="250dp"
-            android:layout_height="250dp"
-            android:layout_marginTop="15dp"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            android:background="#CCCCCC" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:visibility="gone"
-            android:layout_marginTop="24dp" />
-
-
         <Button
             android:id="@+id/boutonValider"
             android:text="@string/Validate"
-            android:background="@drawable/rounded_button"
-            android:textColor="#222222"
-            android:paddingLeft="24dp"
-            android:paddingRight="24dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textSize="16sp"
-            android:layout_marginTop="24dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
-
-        <Button
-            android:id="@+id/boutonDownload"
-            android:text="@string/download"
             android:background="@drawable/rounded_button"
             android:textColor="#222222"
             android:paddingLeft="24dp"

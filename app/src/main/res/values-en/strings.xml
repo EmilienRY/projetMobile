@@ -9,9 +9,9 @@
     <string name="save_to_gallery">Save</string>
     <string name="delete_image_success">Image deleted</string>
     <string name="load_failed">Failed to load image</string>
-    <string name="historic">historic</string>
+    <string name="historic">Historic</string>
     <string name="creation">Creation</string>
-    <string name="compression">compression</string>
+    <string name="compression">Compression</string>
     <string name="takePhoto">Take a picture</string>
     <string name="importImg">Import an image</string>
     <string name="chooseAlgo">    Choice of algorithm (e.g., watershed, slic)</string>
@@ -25,6 +25,9 @@
     <string name="nbClusters">Number of clusters</string>
     <string name="spatialRes">Spatial resolution</string>
     <string name="ColorsMap"> Colors map </string>
+    <string name="decomp"> Decompression </string>
+    <string name="importJson"> Import a JSON file </string>
+    <string name="download"> Download colors map </string>
     <string-array name="algo_options"><item>Watershed</item><item>SLIC</item></string-array>
     <string name="image_infos">Resolution: %1$d x %2$d px\nSize: %3$s KB</string>
 

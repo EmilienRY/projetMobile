@@ -1,9 +1,11 @@
 package com.example.superpixelapp.MainFragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.*;
@@ -42,11 +44,9 @@ import com.example.superpixelapp.worker.CompressionWorker;
 
 public class CompressionFragment extends Fragment {
     private ImageView imageViewCarte, imageViewComp;
-    private Button boutonChoisir;
-    private Button boutonValider;
+    private Button boutonChoisir, boutonValider, boutonTelecharger;
     private ActivityResultLauncher<Intent> launcherGalerie;
-
-    private Bitmap bitmapSelectionne;
+    private Bitmap bitmapSelectionne, imgComp;
     private ProgressBar progressBar;
 
     private ActivityResultLauncher<String> permissionLauncher;
@@ -72,11 +72,13 @@ public class CompressionFragment extends Fragment {
 
         boutonChoisir = vue.findViewById(R.id.boutonChoisir);
         boutonValider = vue.findViewById(R.id.boutonValider);
+        boutonTelecharger = vue.findViewById(R.id.boutonDownload);
         imageViewCarte = vue.findViewById(R.id.imageViewCarte);
         imageViewComp = vue.findViewById(R.id.imageViewComp);
         progressBar = vue.findViewById(R.id.progressBar);
 
         boutonValider.setEnabled(false);
+        boutonTelecharger.setEnabled(false);
 
         // SI on reçoit une image via arguments
         boolean imageArgLoaded = false;
@@ -120,9 +122,12 @@ public class CompressionFragment extends Fragment {
 
         boutonValider.setOnClickListener(view -> {
             if (bitmapSelectionne != null) {
-                lancerTraitementAvecWorker(bitmapSelectionne);
+                lancerTraitementAvecWorker(bitmapSelectionne,imgComp);
+                boutonTelecharger.setEnabled(true);
             }
         });
+
+        boutonTelecharger.setOnClickListener(view -> saveBitmapToFile(imgComp,requireContext()));
 
         // Préparer le launcher de permission notification
         permissionLauncher = registerForActivityResult(
@@ -150,7 +155,7 @@ public class CompressionFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         launcherGalerie.launch(intent);
     }
-    private void lancerTraitementAvecWorker(Bitmap bitmap) {
+    private void lancerTraitementAvecWorker(Bitmap bitmap, Bitmap bitmapImgComp) {
         // 1. Sauvegarde temporaire du bitmap pour le Worker
         File file = new File(requireContext().getCacheDir(), "to_compress.png");
         try (FileOutputStream out = new FileOutputStream(file)) {
@@ -201,7 +206,7 @@ public class CompressionFragment extends Fragment {
                                 if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
                                     String outputPath = workInfo.getOutputData().getString("output_image_path");
                                     if (outputPath != null) {
-                                        Bitmap imgComp = BitmapFactory.decodeFile(outputPath);
+                                        imgComp = BitmapFactory.decodeFile(outputPath);
                                         imageViewCarte.setImageBitmap(imgComp);
                                         imageViewCarte.setBackgroundColor(Color.TRANSPARENT);
                                         // Remet l'original dans imageViewComp
@@ -219,6 +224,29 @@ public class CompressionFragment extends Fragment {
                 });
     }
 
+    public void saveBitmapToFile(Bitmap bitmap, Context context) {
+        String filename = "image_traitee_" + System.currentTimeMillis() + ".png";
+        File directory = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "ImageTraitementApp");
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        File file = new File(directory, filename);
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+
+            // Rendre visible dans la galerie
+            MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null, null);
+
+            Toast.makeText(context, "Image sauvegardée dans la galerie", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Erreur de sauvegarde", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
 

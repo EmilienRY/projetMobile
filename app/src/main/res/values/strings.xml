@@ -11,7 +11,7 @@
     <string name="load_failed">Échec du chargement de l’image</string>
     <string name="historic">Historique</string>
     <string name="creation">Creation</string>
-    <string name="compression">compression</string>
+    <string name="compression">Compression</string>
     <string name="takePhoto">Prendre une photo</string>
     <string name="importImg">Importer une image</string>
     <string name="chooseAlgo">Choix de l\'algorithme (e.g., watershed, slic)</string>
@@ -25,6 +25,9 @@
     <string name="nbClusters">Nombre de clusters</string>
     <string name="spatialRes">Résolution spatiale</string>
     <string name="ColorsMap"> Carte des couleurs </string>
+    <string name="decomp"> Décompression </string>
+    <string name="importJson"> Importer un fichier JSON </string>
+    <string name="download"> Télécharger la carte des couleurs </string>
     <string-array name="algo_options"><item>Watershed</item><item>SLIC</item></string-array>
     <string name="image_infos">Résolution : %1$d x %2$d px\nTaille : %3$s Ko</string>
 

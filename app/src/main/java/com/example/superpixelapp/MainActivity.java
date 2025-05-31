@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+
+import com.example.superpixelapp.MainFragment.DecompressionFragment;
 import com.example.superpixelapp.MainFragment.ListFragment;
 import com.example.superpixelapp.MainFragment.CompressionFragment;
 import com.example.superpixelapp.MainFragment.CreationFragment;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new CreationFragment();
             } else if (itemId == R.id.nav_comp) {
                 selectedFragment = new CompressionFragment();
+            } else if (itemId == R.id.nav_decomp) {
+                selectedFragment = new DecompressionFragment();
             } else {
                 selectedFragment = null;
             }
