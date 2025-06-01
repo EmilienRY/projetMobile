@@ -72,7 +72,7 @@ public class SuperPixelAdapter extends RecyclerView.Adapter<SuperPixelAdapter.Vi
                     }
                 });
 
-        // Clic pour ouvrir l'activité de visualisation
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, VisuActivity.class);
             intent.putExtra("image_id", item.id);

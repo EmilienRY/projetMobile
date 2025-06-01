@@ -26,7 +26,7 @@ public class ListFragment extends Fragment {
         recyclerView = rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Initialiser avec une liste vide
+
         adapter = new SuperPixelAdapter(new ArrayList<>(), requireContext());
         recyclerView.setAdapter(adapter);
 
@@ -38,7 +38,7 @@ public class ListFragment extends Fragment {
     }
 
     public void reload() {
-        loadImages(); // appel direct
+        loadImages();
     }
 
 

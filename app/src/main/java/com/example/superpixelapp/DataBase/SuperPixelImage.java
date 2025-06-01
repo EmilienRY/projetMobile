@@ -9,9 +9,10 @@ public class SuperPixelImage {
     public int id;
 
     public String name;
-    public String originalImagePath;  // Chemin de l'image originale
-    public String processedImagePath; // Chemin de l'image traitée
+    public String originalImagePath;
+    public String processedImagePath;
     public String algorithmName;
+
     public String parameters;
     public long dateCreated;
 }

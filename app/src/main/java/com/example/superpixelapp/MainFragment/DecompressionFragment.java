@@ -177,16 +177,16 @@ public class DecompressionFragment extends Fragment {
             for (int x = 0; x < width; x++) {
                 int pixel = imageIndexee.getPixel(x, y);
 
-                // Extraire l'index depuis le niveau de gris
-                int index = Color.red(pixel); // Comme R=G=B dans du grayscale
 
-                // Protéger contre un index hors limites
+                int index = Color.red(pixel);
+
+
                 if (index >= 0 && index < palette.size()) {
                     int[] rgb = palette.get(index);
                     int couleur = Color.rgb(rgb[0], rgb[1], rgb[2]);
                     imageCouleur.setPixel(x, y, couleur);
                 } else {
-                    // Couleur par défaut (noir)
+
                     imageCouleur.setPixel(x, y, Color.BLACK);
                 }
             }
@@ -214,7 +214,7 @@ public class DecompressionFragment extends Fragment {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
 
-            // Rendre visible dans la galerie
+
             MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null, null);
 
             Toast.makeText(context, "Image sauvegardée dans la galerie", Toast.LENGTH_SHORT).show();

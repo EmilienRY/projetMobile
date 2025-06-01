@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class ImageSavingUtil {
+public class ImageSavingUtil { // fonctions utilitaires pour les images
     public static void saveProcessedImage(Context context, String originalImageUri, Bitmap processedImage,
                                           String name, String algorithmName, String parameters) {
 
@@ -114,7 +114,7 @@ public class ImageSavingUtil {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 fos.close();
 
-                // Ajout au MediaStore
+
                 MediaStore.Images.Media.insertImage(context.getContentResolver(), image.getAbsolutePath(), image.getName(), null);
                 Toast.makeText(context, "Image enregistrée dans la galerie", Toast.LENGTH_SHORT).show();
             }
@@ -124,7 +124,7 @@ public class ImageSavingUtil {
         }
     }
 
-    // Ajoute dans ImageSavingUtil.java
+
     public static String copyToAppInternal(Context context, Uri sourceUri, String fileName) throws IOException {
         File destDir = context.getExternalFilesDir("SuperPixelImages");
         if (!destDir.exists()) destDir.mkdirs();
@@ -150,7 +150,7 @@ public class ImageSavingUtil {
         File imageFile = new File(storageDir, fileName);
 
         try (FileOutputStream out = new FileOutputStream(imageFile)) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out); // 85% de qualité
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
         }
 
         return imageFile.getAbsolutePath();

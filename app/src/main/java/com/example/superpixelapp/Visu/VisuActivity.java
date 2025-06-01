@@ -50,7 +50,7 @@ public class VisuActivity extends AppCompatActivity {
         imageId = getIntent().getIntExtra("image_id", -1);
 
         if (imageId == -1) {
-            finish(); // id invalide
+            finish();
             return;
         }
 
@@ -68,10 +68,10 @@ public class VisuActivity extends AppCompatActivity {
         btnCompress.setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra("goto_compression", true);
-            intent.putExtra("image_path", imageData.processedImagePath); // ou originalImagePath selon ton choix
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // optionnel : évite d’empiler les MainActivity
+            intent.putExtra("image_path", imageData.processedImagePath);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
-            finish(); // optionnel, ferme VisuActivity
+            finish();
         });
 
 

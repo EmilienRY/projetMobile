@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.getBooleanExtra("goto_compression", false)) {
             String imagePath = intent.getStringExtra("image_path");
             if (imagePath != null) {
-                // Charge CompressionFragment AVEC image
+
                 CompressionFragment fragment = CompressionFragment.newInstance(imagePath);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, fragment)
@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
                 isInitialIntentHandled = true;
             }
         } else if (savedInstanceState == null) {
-            // Fragment par défaut (liste)
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new ListFragment())
                     .commit();
@@ -47,23 +46,34 @@ public class MainActivity extends AppCompatActivity {
 
 
         bottomNav.setOnItemSelectedListener(item -> {
-            // Si on vient d'un intent spécial → ignore la première sélection
+
             if (isInitialIntentHandled) {
+
                 isInitialIntentHandled = false;
+
                 return true;
             }
 
             Fragment selectedFragment;
             int itemId = item.getItemId();
             if (itemId == R.id.nav_list) {
+
                 selectedFragment = new ListFragment();
+
             } else if (itemId == R.id.nav_crea) {
+
                 selectedFragment = new CreationFragment();
+
             } else if (itemId == R.id.nav_comp) {
+
                 selectedFragment = new CompressionFragment();
+
             } else if (itemId == R.id.nav_decomp) {
+
                 selectedFragment = new DecompressionFragment();
+
             } else {
+
                 selectedFragment = null;
             }
 
@@ -95,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (current instanceof ListFragment) {
-                ((ListFragment) current).reload(); // 🔁 fonction à ajouter dans ListFragment
+                ((ListFragment) current).reload();
             }
         }
     }

@@ -84,7 +84,7 @@ public class CompressionFragment extends Fragment {
         boutonValider.setEnabled(false);
         boutonTelecharger.setEnabled(false);
 
-        // SI on reçoit une image via arguments
+        // si on reçoit une image via arguments
         boolean imageArgLoaded = false;
         if (getArguments() != null && getArguments().containsKey("image_path")) {
             String imagePath = getArguments().getString("image_path");
@@ -101,7 +101,7 @@ public class CompressionFragment extends Fragment {
             }
         }
 
-        // Préparer le launcher pour ouvrir la galerie
+        // pour galerie
         launcherGalerie = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -133,7 +133,7 @@ public class CompressionFragment extends Fragment {
 
         boutonTelecharger.setOnClickListener(view -> saveBitmapToFile(imgComp,requireContext()));
 
-        // Préparer le launcher de permission notification
+        // permissions
         permissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -143,7 +143,7 @@ public class CompressionFragment extends Fragment {
                 }
         );
 
-        // Demander la permission si besoin (Android 13+)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -160,7 +160,7 @@ public class CompressionFragment extends Fragment {
         launcherGalerie.launch(intent);
     }
     private void lancerTraitementAvecWorker(Bitmap bitmap, Bitmap bitmapImgComp) {
-        // 1. Sauvegarde temporaire du bitmap pour le Worker
+
         File file = new File(requireContext().getCacheDir(), "to_compress.png");
         try (FileOutputStream out = new FileOutputStream(file)) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -182,7 +182,7 @@ public class CompressionFragment extends Fragment {
                 .setInputData(inputData)
                 .build();
 
-        // ===> Montre la roue et désactive les boutons tout de suite
+
         progressBar.setVisibility(View.VISIBLE);
         boutonValider.setEnabled(false);
         boutonChoisir.setEnabled(false);
@@ -190,20 +190,20 @@ public class CompressionFragment extends Fragment {
         WorkManager.getInstance(requireContext()).enqueue(workRequest);
         setCompressionEnCours(true);
 
-        // Observe l'état du Worker pour afficher l'image une fois terminée
+        // lance le worker
         WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(workRequest.getId())
                 .observe(getViewLifecycleOwner(), new Observer<WorkInfo>() {
                     @Override
                     public void onChanged(WorkInfo workInfo) {
                         if (workInfo != null) {
                             if (workInfo.getState() == WorkInfo.State.RUNNING) {
-                                // (optionnel, déjà fait au lancement)
+                                // affiche une roue pendant le calcul
                                 progressBar.setVisibility(View.VISIBLE);
                                 boutonValider.setEnabled(false);
                                 boutonChoisir.setEnabled(false);
                             }
                             if (workInfo.getState().isFinished()) {
-                                // ===> Cache la roue et réactive les boutons
+
                                 progressBar.setVisibility(View.GONE);
                                 boutonValider.setEnabled(true);
                                 boutonChoisir.setEnabled(true);
@@ -215,9 +215,9 @@ public class CompressionFragment extends Fragment {
                                         imgComp = BitmapFactory.decodeFile(outputPath);
                                         imageViewCarte.setImageBitmap(imgComp);
                                         imageViewCarte.setBackgroundColor(Color.TRANSPARENT);
-                                        // Remet l'original dans imageViewComp
+
                                         imageViewComp.setImageBitmap(bitmap);
-                                        Toast.makeText(getContext(), "Compression terminée !", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), "Compression terminée!", Toast.LENGTH_SHORT).show();
                                     } else {
                                         Toast.makeText(getContext(), "Erreur: chemin du fichier résultat absent", Toast.LENGTH_SHORT).show();
                                     }
@@ -244,7 +244,7 @@ public class CompressionFragment extends Fragment {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
 
-            // Rendre visible dans la galerie
+
             MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null, null);
 
             Toast.makeText(context, "Image sauvegardée dans la galerie", Toast.LENGTH_SHORT).show();

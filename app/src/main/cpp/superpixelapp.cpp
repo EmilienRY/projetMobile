@@ -79,7 +79,7 @@ static inline float clampF(float v, float lo, float hi) {
 }
 
 void filtreGaussien(const std::vector<float> &in, std::vector<float> &out, int width, int height, int rayon) {
-    // Calcul du noyau
+
     int ksize = 2 * rayon + 1;
     std::vector<std::vector<float>> kernel(ksize, std::vector<float>(ksize));
     float sigma = rayon / 2.0f;
@@ -138,9 +138,9 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageWatersh
     if (!pixels) return;
 
     std::vector<Vec3> imgIn(width * height);
-    std::vector<float> grey(width * height);         // Grayscale float
-    std::vector<float> greyFlou(width * height);     // Flouté
-    std::vector<uint8_t> gradient(width * height);   // Gradient final
+    std::vector<float> grey(width * height);
+    std::vector<float> greyFlou(width * height);
+    std::vector<uint8_t> gradient(width * height);
     std::vector<std::vector<int>> labels(height, std::vector<int>(width, -1));
 
     for (int i = 0; i < width * height; i++) {
@@ -314,6 +314,7 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
     const int k = 256;
     std::vector<std::vector<int>> centroids(k, std::vector<int>(3));
     for (int i = 0; i < k; ++i) {
+
         centroids[i][0] = rand() % 256;
         centroids[i][1] = rand() % 256;
         centroids[i][2] = rand() % 256;
@@ -331,6 +332,7 @@ Java_com_example_superpixelapp_worker_CompressionWorker_compression(
 
         for (int i = 0; i < taille; ++i) {
             jint pixel = tabPixels[i];
+
             int r = (pixel >> 16) & 0xff;
             int g = (pixel >> 8) & 0xff;
             int b = pixel & 0xff;
@@ -462,17 +464,20 @@ Vec3 RGBtoLAB(const Vec3& color) {
 
 
 Vec3 LABtoRGB(const Vec3& lab) {
-    // 1. LAB → XYZ
+
     float y = (lab.r + 16.f) / 116.f;
     float x = lab.g / 500.f + y;
     float z = y - lab.b / 200.f;
 
     x = 0.95047f * (x * x * x);
     y = 1.00000f * (y * y * y);
+
     z = 1.08883f * (z * z * z);
 
     float r = x * 3.2406f + y * -1.5372f + z * -0.4986f;
+
     float g = x * -0.9689f + y * 1.8758f + z * 0.0415f;
+
     float b = x * 0.0557f + y * -0.2040f + z * 1.0570f;
 
     auto clamp = [](float v) { return std::max(0, std::min(255, int(v * 255.f))); };
@@ -503,7 +508,6 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageSLIC(
         imgLAB[i] = RGBtoLAB(Vec3(r, g, b));
     }
 
-    // 2. Initialisation centres
     struct Center { Vec2 pos; Vec3 color; };
     std::vector<Center> centers;
     for (int y = S/2; y < height; y += S) {
@@ -523,15 +527,18 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageSLIC(
             Vec2 c = centers[k].pos;
             Vec3 clab = centers[k].color;
             for (int dy = -S; dy <= S; ++dy) {
+
                 int yy = c.y + dy;
                 if (yy < 0 || yy >= height) continue;
                 for (int dx = -S; dx <= S; ++dx) {
+
                     int xx = c.x + dx;
                     if (xx < 0 || xx >= width) continue;
                     int idx = yy * width + xx;
                     Vec3 lab = imgLAB[idx];
                     float dc = (lab - clab).norm();
                     float ds = std::sqrt(float(dx * dx + dy * dy));
+
                     float D = dc + (compactness / S) * ds;
                     if (D < distances[idx]) {
                         distances[idx] = D;
@@ -548,6 +555,7 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageSLIC(
             if (k < 0) continue;
             int x = i % width, y = i / width;
             sumXY[k].x += x;
+
             sumXY[k].y += y;
             sumLAB[k] += imgLAB[i];
             count[k]++;
@@ -563,6 +571,7 @@ Java_com_example_superpixelapp_MainFragment_CreationFragment_traiterImageSLIC(
     for (int i = 0; i < width * height; ++i) {
         int k = labels[i];
         Vec3 lab = centers[k].color;
+
         Vec3 rgb = LABtoRGB(lab);
         pixels[i] = (0xFF << 24) | (int(rgb.r) << 16) | (int(rgb.g) << 8) | int(rgb.b);
     }

@@ -45,26 +45,33 @@ public class CompressionWorker extends Worker {
         try {
             Context context = getApplicationContext();
             Uri imageUri = Uri.parse(imageUriString);
+
+
             InputStream stream = context.getContentResolver().openInputStream(imageUri);
             Bitmap bitmap = BitmapFactory.decodeStream(stream);
+
             if (bitmap == null) return Result.failure();
 
+
             int width = bitmap.getWidth();
+
             int height = bitmap.getHeight();
+
             int[] pixels = new int[width * height];
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-            String jsonOutputPath = getInputData().getString("json_output_path");
 
-            // Traitement C++ !
+            String jsonOutputPath = getInputData().getString("json_output_path");
 
             int[] clusterMap = compression(pixels, width, height, jsonOutputPath);
 
-            // Sauvegarde clusterMap dans un fichier temporaire PNG
             Bitmap outputBitmap = Bitmap.createBitmap(clusterMap, width, height, Bitmap.Config.ARGB_8888);
 
             File outputDir = context.getCacheDir();
+
             File outputFile = File.createTempFile("img_comp_", ".png", outputDir);
+
             FileOutputStream out = new FileOutputStream(outputFile);
+
             outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.close();
 
@@ -75,6 +82,7 @@ public class CompressionWorker extends Worker {
 
             return Result.success(outputData);
         } catch (Exception e) {
+
             e.printStackTrace();
             return Result.failure();
         }
@@ -83,26 +91,31 @@ public class CompressionWorker extends Worker {
 
     private void sendFinishNotification(String filePath) {
         String CHANNEL_ID = "compression_result";
+
         Context context = getApplicationContext();
 
-        // Crée le canal (Android 8+)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Compression";
             String description = "Résultats compression superpixel";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+
             channel.setDescription(description);
+
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+
             if (notificationManager != null)
                 notificationManager.createNotificationChannel(channel);
         }
 
-        // Intent pour ouvrir l'app quand on clique sur la notif
+
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE // obligatoire sur Android 12+
+                PendingIntent.FLAG_IMMUTABLE
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
@@ -115,9 +128,10 @@ public class CompressionWorker extends Worker {
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
             if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
-                // Permission non accordée, ne pas envoyer la notification
+
                 return;
             }
         }

@@ -64,9 +64,10 @@ public class CreationFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View vue = inflater.inflate(R.layout.fragment_creation, container, false);
 
-        // Initialisation UI
+
         imageView = vue.findViewById(R.id.imageView);
         boutonPhoto = vue.findViewById(R.id.boutonPhoto);
+
         boutonChoisir = vue.findViewById(R.id.boutonChoisir);
         boutonValider = vue.findViewById(R.id.boutonValider);
         boutonCompression = vue.findViewById(R.id.boutonCompression);
@@ -81,7 +82,7 @@ public class CreationFragment extends Fragment {
         boutonCompression.setEnabled(false);
         param2.setVisibility(View.GONE);
 
-        // Spinner d'algo : affiche les paramètres adaptés à l'algo
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 requireContext(),
                 R.array.algo_options,
@@ -98,7 +99,7 @@ public class CreationFragment extends Fragment {
                     param1.setHint(getString(R.string.nbClusters));
                     param2.setHint(getString(R.string.spatialRes));
                     param2.setVisibility(View.VISIBLE);
-                } else { // Watershed par défaut
+                } else {
                     param1.setHint(getString(R.string.minSize));
                     param2.setVisibility(View.GONE);
                 }
@@ -108,7 +109,7 @@ public class CreationFragment extends Fragment {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        // Choix caméra
+
         launcherCamera = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -126,7 +127,7 @@ public class CreationFragment extends Fragment {
                     }
                 });
 
-        // Choix galerie
+
         launcherGalerie = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -182,10 +183,10 @@ public class CreationFragment extends Fragment {
         return vue;
     }
 
-    private Bitmap adapterTaille(Bitmap bitmap) {
+    private Bitmap adapterTaille(Bitmap bitmap) { // on modifie lla taille des images trop grosses pour faire un traitement plus rapide
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
-        if (w > 2000 || h > 2000) {
+        if (w > 5000 || h > 5000) {
             return Bitmap.createScaledBitmap(bitmap, w / 3, h / 3, true);
         } else if (w > 1000 || h > 1000) {
             return Bitmap.createScaledBitmap(bitmap, w / 2, h / 2, true);
@@ -351,7 +352,9 @@ public class CreationFragment extends Fragment {
                     int dot = name.lastIndexOf(".");
                     if (dot >= 0) format = name.substring(dot + 1).toUpperCase();
                 }
-            } catch (Exception e) { /* ignore */ }
+            } catch (Exception e) {
+
+            }
         }
 
         String infos = getString(

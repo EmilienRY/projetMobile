@@ -79,7 +79,7 @@ public class ComparaisonActivity extends AppCompatActivity {
                 && originalBitmap.getHeight() == processedBitmap.getHeight()) {
 
             Log.d("PSNR_CHECK", "Bitmaps loaded and sizes match");
-            new Thread(() -> {
+            new Thread(() -> { // calcul du psnr en décalé si ça prend du temps pour quand même voir images
                 Log.d("PSNR_THREAD", "Thread started");
                 try {
                     double psnr = computePSNR(originalBitmap, processedBitmap);
@@ -105,7 +105,7 @@ public class ComparaisonActivity extends AppCompatActivity {
 
 
 
-        // Slider : change la largeur du masque
+        // slider
         slider.addOnChangeListener((slider, value, fromUser) -> {
             imageTraitee.setClipBounds(new Rect(
                     0, 0,
@@ -115,11 +115,11 @@ public class ComparaisonActivity extends AppCompatActivity {
         });
     }
 
-    // Calcul du PSNR
+
     public static double computePSNR(Bitmap original, Bitmap processed) {
         if (original.getWidth() != processed.getWidth() ||
                 original.getHeight() != processed.getHeight()) {
-            return -1; // Erreur : tailles différentes
+            return -1;
         }
 
         double mse = 0.0;
@@ -146,7 +146,7 @@ public class ComparaisonActivity extends AppCompatActivity {
         }
         mse /= (width * height * 3.0);
 
-        if (mse == 0) return 99.99; // images identiques (PSNR infini)
+        if (mse == 0) return 99.99;
         double psnr = 10.0 * Math.log10((255 * 255) / mse);
         return psnr;
     }
